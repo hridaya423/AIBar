@@ -10,20 +10,19 @@ public struct ZaiSettingsReader: Sendable {
     public static func apiToken(
         environment: [String: String] = ProcessInfo.processInfo.environment) -> String?
     {
-        if let token = self.cleaned(environment[apiTokenKey]) { return token }
-        return nil
+        ProviderSettingsReaderSupport.cleaned(environment[self.apiTokenKey])
     }
 
     public static func apiHost(
         environment: [String: String] = ProcessInfo.processInfo.environment) -> String?
     {
-        self.cleaned(environment[self.apiHostKey])
+        ProviderSettingsReaderSupport.cleaned(environment[self.apiHostKey])
     }
 
     public static func quotaURL(
         environment: [String: String] = ProcessInfo.processInfo.environment) -> URL?
     {
-        guard let raw = self.cleaned(environment[quotaURLKey]) else { return nil }
+        guard let raw = ProviderSettingsReaderSupport.cleaned(environment[self.quotaURLKey]) else { return nil }
         if let url = URL(string: raw), url.scheme != nil {
             return url
         }
@@ -31,18 +30,7 @@ public struct ZaiSettingsReader: Sendable {
     }
 
     static func cleaned(_ raw: String?) -> String? {
-        guard var value = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
-            return nil
-        }
-
-        if (value.hasPrefix("\"") && value.hasSuffix("\"")) ||
-            (value.hasPrefix("'") && value.hasSuffix("'"))
-        {
-            value = String(value.dropFirst().dropLast())
-        }
-
-        value = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        return value.isEmpty ? nil : value
+        ProviderSettingsReaderSupport.cleaned(raw)
     }
 }
 

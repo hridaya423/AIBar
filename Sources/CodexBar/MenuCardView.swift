@@ -120,8 +120,7 @@ struct UsageMenuCardView: View {
         let creditsRemaining: Double?
         let creditsHintText: String?
         let creditsHintCopyText: String?
-        var codexResetCreditsText: String?
-        var codexResetCreditsDetailText: String?
+        var codexResetCredits: CodexResetCreditsPresentation?
         let providerCost: ProviderCostSection?
         let tokenUsage: TokenUsageSection?
         let placeholder: String?
@@ -174,12 +173,6 @@ struct UsageMenuCardView: View {
                                     metric: metric,
                                     title: Self.popupMetricTitle(provider: liveModel.provider, metric: metric),
                                     progressColor: liveModel.progressColor)
-                            }
-                            if let resetCredits = liveModel.codexResetCreditsText {
-                                Divider()
-                                CodexResetCreditsContent(
-                                    text: resetCredits,
-                                    detailText: liveModel.codexResetCreditsDetailText)
                             }
                             if let dashboard = liveModel.inlineUsageDashboard {
                                 InlineUsageDashboardContent(model: dashboard)
@@ -571,20 +564,12 @@ struct UsageMenuCardUsageSectionView: View {
                     title: UsageMenuCardView.popupMetricTitle(provider: liveModel.provider, metric: metric),
                     progressColor: liveModel.progressColor)
             }
-            if let resetCredits = liveModel.codexResetCreditsText {
-                if !liveModel.metrics.isEmpty {
-                    Divider()
-                }
-                CodexResetCreditsContent(
-                    text: resetCredits,
-                    detailText: liveModel.codexResetCreditsDetailText)
-            }
             if let dashboard = liveModel.inlineUsageDashboard {
                 InlineUsageDashboardContent(model: dashboard)
             } else if !liveModel.usageNotes.isEmpty {
                 UsageNotesContent(notes: liveModel.usageNotes)
             } else if let placeholder = liveModel.placeholder, liveModel.metrics.isEmpty,
-                      liveModel.codexResetCreditsText == nil
+                      liveModel.codexResetCredits == nil
             {
                 Text(placeholder)
                     .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
@@ -812,6 +797,7 @@ extension UsageMenuCardView.Model {
         let kiloAutoMode: Bool
         let hidePersonalInfo: Bool
         let weeklyPace: UsagePace?
+        let codexSessionPace: UsagePace?
         let quotaWarningThresholds: [QuotaWarningWindow: [Int]]
         let workDaysPerWeek: Int?
         let usesLiveSubtitle: Bool
@@ -840,6 +826,7 @@ extension UsageMenuCardView.Model {
             kiloAutoMode: Bool = false,
             hidePersonalInfo: Bool,
             weeklyPace: UsagePace? = nil,
+            codexSessionPace: UsagePace? = nil,
             quotaWarningThresholds: [QuotaWarningWindow: [Int]] = [:],
             workDaysPerWeek: Int? = nil,
             usesLiveSubtitle: Bool = false,
@@ -867,6 +854,7 @@ extension UsageMenuCardView.Model {
             self.kiloAutoMode = kiloAutoMode
             self.hidePersonalInfo = hidePersonalInfo
             self.weeklyPace = weeklyPace
+            self.codexSessionPace = codexSessionPace
             self.quotaWarningThresholds = quotaWarningThresholds
             self.workDaysPerWeek = workDaysPerWeek
             self.usesLiveSubtitle = usesLiveSubtitle
@@ -943,8 +931,7 @@ extension UsageMenuCardView.Model {
             creditsRemaining: input.credits?.remaining,
             creditsHintText: redacted.creditsHintText,
             creditsHintCopyText: redacted.creditsHintCopyText,
-            codexResetCreditsText: Self.codexResetCreditsText(input: input),
-            codexResetCreditsDetailText: Self.codexResetCreditsDetailText(input: input),
+            codexResetCredits: Self.codexResetCredits(input: input),
             providerCost: providerCost,
             tokenUsage: tokenUsage,
             placeholder: placeholder,
@@ -1562,6 +1549,7 @@ extension UsageMenuCardView.Model {
             let title: String
             let id: String
             let paceDetail: PaceDetail?
+            var sessionResetPrompt: String?
             switch lane {
             case .session:
                 title = L(input.metadata.sessionLabel)
@@ -1570,7 +1558,12 @@ extension UsageMenuCardView.Model {
                     provider: input.provider,
                     window: window,
                     now: input.now,
-                    showUsed: input.usageBarsShowUsed)
+                    showUsed: input.usageBarsShowUsed,
+                    pace: input.codexSessionPace)
+                sessionResetPrompt = Self.codexSessionResetPrompt(
+                    input: input,
+                    sessionWindow: window,
+                    weeklyWindow: projection.rateWindow(for: .weekly))
             case .weekly:
                 title = L(input.metadata.weeklyLabel)
                 id = "secondary"
@@ -1588,8 +1581,8 @@ extension UsageMenuCardView.Model {
                 percentStyle: percentStyle,
                 resetText: Self.resetText(for: window, style: input.resetTimeDisplayStyle, now: input.now),
                 detailText: nil,
-                detailLeftText: paceDetail?.leftLabel,
-                detailRightText: paceDetail?.rightLabel,
+                detailLeftText: sessionResetPrompt ?? paceDetail?.leftLabel,
+                detailRightText: sessionResetPrompt == nil ? paceDetail?.rightLabel : nil,
                 pacePercent: paceDetail?.pacePercent,
                 paceOnTop: paceDetail?.paceOnTop ?? true,
                 warningMarkerPercents: Self.codexLaneMarkerPercents(

@@ -8,13 +8,13 @@ public struct AlibabaTokenPlanSettingsReader: Sendable {
     public static func cookieHeader(
         environment: [String: String] = ProcessInfo.processInfo.environment) -> String?
     {
-        self.cleaned(environment[self.cookieHeaderKey])
+        ProviderSettingsReaderSupport.cleaned(environment[self.cookieHeaderKey])
     }
 
     public static func hostOverride(
         environment: [String: String] = ProcessInfo.processInfo.environment) -> String?
     {
-        guard let raw = self.cleaned(environment[self.hostKey]) else { return nil }
+        guard let raw = ProviderSettingsReaderSupport.cleaned(environment[self.hostKey]) else { return nil }
         if let scheme = URL(string: raw)?.scheme {
             return scheme.lowercased() == "https" ? raw : nil
         }
@@ -24,7 +24,7 @@ public struct AlibabaTokenPlanSettingsReader: Sendable {
     public static func quotaURL(
         environment: [String: String] = ProcessInfo.processInfo.environment) -> URL?
     {
-        guard let raw = self.cleaned(environment[self.quotaURLKey]) else { return nil }
+        guard let raw = ProviderSettingsReaderSupport.cleaned(environment[self.quotaURLKey]) else { return nil }
         if let url = URL(string: raw), let scheme = url.scheme {
             return scheme.lowercased() == "https" ? url : nil
         }
@@ -32,16 +32,7 @@ public struct AlibabaTokenPlanSettingsReader: Sendable {
     }
 
     static func cleaned(_ raw: String?) -> String? {
-        guard var value = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
-            return nil
-        }
-        if (value.hasPrefix("\"") && value.hasSuffix("\"")) ||
-            (value.hasPrefix("'") && value.hasSuffix("'"))
-        {
-            value = String(value.dropFirst().dropLast())
-        }
-        value = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        return value.isEmpty ? nil : value
+        ProviderSettingsReaderSupport.cleaned(raw)
     }
 }
 

@@ -302,6 +302,8 @@
 "Stored in ~/.codexbar/config.json. You can also provide KILO_API_KEY or " = "مخزنة في ~/.codexbar/config.json. يمكنك أيضا توفير KILO_API_KEY or ";
 "Stores local Codex usage history (8 weeks) to personalize Pace predictions." = "يخزن تاريخ استخدام Codex محليا (8 أسابيع) لتخصيص توقعات Pac.";
 "Subscription Utilization" = "استخدام الاشتراكات";
+"Subscription value this month" = "قيمة الاشتراك هذا الشهر";
+"Estimate sharpens as your weekly limit fills." = "يصبح التقدير أدق كلما امتلأ حدك الأسبوعي.";
 "Surprise me" = "فاجئني";
 "Switcher shows icons" = "المحول يعرض الأيقونات";
 "Symlink CodexBarCLI to /usr/local/bin and /opt/homebrew/bin as codexbar." = "Symlink CodexBarCLI إلى /usr/local/bin و /opt/homebrew/bin ك codexbar.";
@@ -640,6 +642,8 @@
 "display_mode_pace_desc" = "مؤشر السرعة (مثلا +5%)";
 "display_mode_both_desc" = "أظهر كل من النسبة المئوية والسرعة (مثلا 45% · +5%)";
 "display_mode_reset_time_desc" = "عرض وقت إعادة الضبط للمقياس المحدد (مثلا ↻ 3:56 مساء)";
+"display_mode_percent_and_reset" = "النسبة + إعادة الضبط";
+"display_mode_percent_and_reset_desc" = "عرض النسبة المتبقية والعد التنازلي لإعادة الضبط (مثلا 42% 4h · W 78% 3d لـ Codex)";
 
 /* Provider status */
 "status_operational" = "التشغيل";
@@ -1099,7 +1103,20 @@
 "Limit Reset Credits" = "أرصدة إعادة تعيين الحد";
 "1 manual reset available" = "تتوفر إعادة تعيين يدوية واحدة";
 "%d manual resets available" = "تتوفر %d عمليات إعادة تعيين يدوية";
+"↻ Reset available — use it to keep going" = "↻ إعادة تعيين متاحة — استخدمها للمتابعة";
+"Reset bank" = "رصيد إعادة التعيين";
 "Next expires %@" = "تنتهي صلاحية التالية %@";
+"Use Reset" = "استخدم إعادة التعيين";
+"Use the next expiring Codex reset credit" = "استخدم رصيد إعادة تعيين Codex التالي انتهاءً";
+"No expiry" = "لا انتهاء صلاحية";
+"Codex reset expires soon" = "ستنتهي صلاحية إعادة تعيين Codex قريبًا";
+"A Codex reset credit expires %@." = "ينتهي رصيد إعادة تعيين Codex %@.";
+"Use Codex reset?" = "استخدام إعادة تعيين Codex؟";
+"This spends one banked Codex reset credit now." = "سيستخدم هذا رصيد إعادة تعيين Codex محفوظًا الآن.";
+"Codex reset used" = "تم استخدام إعادة تعيين Codex";
+"%d window reset." = "تمت إعادة تعيين %d نافذة.";
+"Codex reset failed" = "فشلت إعادة تعيين Codex";
+"Available reset" = "Available reset";
 "byte_unit_byte" = "بايت";
 "byte_unit_bytes" = "بايتات";
 "byte_unit_kilobyte" = "كيلوبايت";

@@ -302,6 +302,8 @@
 "Stored in ~/.codexbar/config.json. You can also provide KILO_API_KEY or " = "เก็บไว้ใน ~/.codexbar/config.json. คุณยังสามารถระบุ KILO_API_KEY or ";
 "Stores local Codex usage history (8 weeks) to personalize Pace predictions." = "จัดเก็บประวัติการใช้งาน Codex ในพื้นที่ (8 สัปดาห์) เพื่อปรับแต่งการคาดการณ์ Pace ในแบบของคุณ";
 "Subscription Utilization" = "การใช้การสมัครสมาชิก";
+"Subscription value this month" = "มูลค่าการสมัครสมาชิกเดือนนี้";
+"Estimate sharpens as your weekly limit fills." = "การประมาณการจะแม่นยําขึ้นเมื่อขีดจํากัดรายสัปดาห์ของคุณเต็มขึ้น";
 "Surprise me" = "ทําให้ฉันประหลาดใจ";
 "Switcher shows icons" = "ตัวสลับแสดงไอคอน";
 "Symlink CodexBarCLI to /usr/local/bin and /opt/homebrew/bin as codexbar." = "Symlink CodexBarCLI เป็น /usr/local/bin และ /opt/homebrew/bin เป็น codexbar";
@@ -640,6 +642,8 @@
 "display_mode_pace_desc" = "แสดงตัวบ่งชี้อัตราการก้าว (เช่น +5%)";
 "display_mode_both_desc" = "แสดงทั้งเปอร์เซ็นต์และความเร็ว (เช่น 45% · +5%)";
 "display_mode_reset_time_desc" = "แสดงเวลารีเซ็ตสําหรับเมตริกที่เลือก (เช่น ↻ 15:56 น.)";
+"display_mode_percent_and_reset" = "เปอร์เซ็นต์ + รีเซ็ต";
+"display_mode_percent_and_reset_desc" = "แสดงเปอร์เซ็นต์คงเหลือและเวลานับถอยหลังการรีเซ็ต (เช่น 42% 4h · W 78% 3d สําหรับ Codex)";
 
 /* Provider status */
 "status_operational" = "การดําเนินงาน";
@@ -1099,7 +1103,20 @@
 "Limit Reset Credits" = "เครดิตรีเซ็ตขีดจำกัด";
 "1 manual reset available" = "มีการรีเซ็ตด้วยตนเอง 1 ครั้ง";
 "%d manual resets available" = "มีการรีเซ็ตด้วยตนเอง %d ครั้ง";
+"↻ Reset available — use it to keep going" = "↻ มีการรีเซ็ต — ใช้เพื่อไปต่อ";
+"Reset bank" = "คลังรีเซ็ต";
 "Next expires %@" = "รายการถัดไปหมดอายุ %@";
+"Use Reset" = "ใช้การรีเซ็ต";
+"Use the next expiring Codex reset credit" = "ใช้เครดิตรีเซ็ต Codex ที่หมดอายุเร็วที่สุด";
+"No expiry" = "ไม่มีวันหมดอายุ";
+"Codex reset expires soon" = "การรีเซ็ต Codex จะหมดอายุเร็ว ๆ นี้";
+"A Codex reset credit expires %@." = "เครดิตรีเซ็ต Codex จะหมดอายุ %@.";
+"Use Codex reset?" = "ใช้การรีเซ็ต Codex?";
+"This spends one banked Codex reset credit now." = "การดำเนินการนี้จะใช้เครดิตรีเซ็ต Codex ที่เก็บไว้หนึ่งรายการตอนนี้";
+"Codex reset used" = "ใช้การรีเซ็ต Codex แล้ว";
+"%d window reset." = "รีเซ็ต %d หน้าต่างแล้ว";
+"Codex reset failed" = "รีเซ็ต Codex ไม่สำเร็จ";
+"Available reset" = "Available reset";
 "byte_unit_byte" = "ไบต์";
 "byte_unit_bytes" = "ไบต์";
 "byte_unit_kilobyte" = "กิโลไบต์";

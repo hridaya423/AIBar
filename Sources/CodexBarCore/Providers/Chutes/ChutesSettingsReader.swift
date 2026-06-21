@@ -7,7 +7,7 @@ public struct ChutesSettingsReader: Sendable {
     public static func apiKey(
         environment: [String: String] = ProcessInfo.processInfo.environment) -> String?
     {
-        self.cleaned(environment[self.apiKeyEnvironmentKey])
+        ProviderSettingsReaderSupport.cleaned(environment[self.apiKeyEnvironmentKey])
     }
 
     public static func apiURL(
@@ -22,29 +22,21 @@ public struct ChutesSettingsReader: Sendable {
     public static func validateEndpointOverrides(
         environment: [String: String] = ProcessInfo.processInfo.environment) throws
     {
-        guard let raw = self.cleaned(environment[self.apiURLEnvironmentKey]) else { return }
-        guard ProviderEndpointOverrideValidator.normalizedHTTPSURL(from: raw) == nil else { return }
+        guard ProviderSettingsReaderSupport.hasInvalidEndpointOverride(
+            environmentKey: self.apiURLEnvironmentKey,
+            environment: environment)
+        else { return }
         throw ChutesSettingsError.invalidEndpointOverride(self.apiURLEnvironmentKey)
     }
 
     static func cleaned(_ raw: String?) -> String? {
-        guard var value = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
-            return nil
-        }
-
-        if (value.hasPrefix("\"") && value.hasSuffix("\"")) ||
-            (value.hasPrefix("'") && value.hasSuffix("'"))
-        {
-            value = String(value.dropFirst().dropLast())
-        }
-
-        value = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        return value.isEmpty ? nil : value
+        ProviderSettingsReaderSupport.cleaned(raw)
     }
 
     private static func validAPIURL(environment: [String: String]) -> URL? {
-        guard let raw = self.cleaned(environment[self.apiURLEnvironmentKey]) else { return nil }
-        return ProviderEndpointOverrideValidator.normalizedHTTPSURL(from: raw)
+        ProviderSettingsReaderSupport.normalizedHTTPSURL(
+            environmentKey: self.apiURLEnvironmentKey,
+            environment: environment)
     }
 }
 

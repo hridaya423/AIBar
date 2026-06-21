@@ -369,7 +369,9 @@ extension SettingsStore {
             ?? MenuBarDisplayMode.percent.rawValue
         let kiroMenuBarDisplayModeRaw = userDefaults.string(forKey: "kiroMenuBarDisplayMode")
             ?? KiroMenuBarDisplayMode.automatic.rawValue
-        let historicalTrackingEnabled = userDefaults.object(forKey: "historicalTrackingEnabled") as? Bool ?? false
+        // Default on so Codex pace uses the time-of-day-aware historical curve (with dashboard
+        // backfill) instead of a linear "used all day" projection.
+        let historicalTrackingEnabled = userDefaults.object(forKey: "historicalTrackingEnabled") as? Bool ?? true
         let multiAccountMenuLayoutRaw = Self.loadMultiAccountMenuLayoutRaw(userDefaults: userDefaults)
         let resolvedPreferences = Self.loadMenuBarMetricPreferences(userDefaults: userDefaults)
         let copilotBudgetExtrasEnabled = userDefaults.object(forKey: "copilotBudgetExtrasEnabled") as? Bool ?? false

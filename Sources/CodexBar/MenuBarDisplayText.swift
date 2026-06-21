@@ -34,6 +34,49 @@ enum MenuBarDisplayText {
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
+    /// Compact reset countdown showing just the largest unit, *rounded* to the nearest of that unit
+    /// (so 2h57m shows "3h", not "2h"), carrying at boundaries (23h40m → "1d"). Returns nil when the
+    /// window has no future reset time.
+    static func shortResetText(window: RateWindow?, now: Date) -> String? {
+        guard let resetsAt = window?.resetsAt else { return nil }
+        let seconds = resetsAt.timeIntervalSince(now)
+        guard seconds > 0 else { return nil }
+        if seconds >= 23.5 * 3600 {
+            return "\(max(1, Int((seconds / 86400).rounded())))d"
+        }
+        if seconds >= 59.5 * 60 {
+            return "\(max(1, Int((seconds / 3600).rounded())))h"
+        }
+        return "\(max(1, Int((seconds / 60).rounded())))m"
+    }
+
+    /// Codex menu bar text combining both windows as remaining % + short reset countdown, e.g.
+    /// "42% 4h · W 78% 3d". The session window has no label; the weekly window is prefixed "W".
+    static func codexCombinedPercentAndResetText(
+        sessionWindow: RateWindow?,
+        weeklyWindow: RateWindow?,
+        showUsed: Bool,
+        now: Date)
+        -> String?
+    {
+        var parts: [String] = []
+        if let sessionWindow, let percent = self.percentText(window: sessionWindow, showUsed: showUsed) {
+            if let reset = self.shortResetText(window: sessionWindow, now: now) {
+                parts.append("\(percent) \(reset)")
+            } else {
+                parts.append(percent)
+            }
+        }
+        if let weeklyWindow, let percent = self.percentText(window: weeklyWindow, showUsed: showUsed) {
+            if let reset = self.shortResetText(window: weeklyWindow, now: now) {
+                parts.append("W \(percent) \(reset)")
+            } else {
+                parts.append("W \(percent)")
+            }
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
     private static func codexSessionLabel(window: RateWindow) -> String {
         guard let minutes = window.windowMinutes, minutes > 0 else { return "S" }
         guard minutes.isMultiple(of: 60) else { return "\(minutes)m" }
@@ -51,6 +94,12 @@ enum MenuBarDisplayText {
         switch mode {
         case .percent:
             return self.percentText(window: percentWindow, showUsed: showUsed)
+        case .percentAndReset:
+            guard let percent = self.percentText(window: percentWindow, showUsed: showUsed) else { return nil }
+            if let reset = self.shortResetText(window: percentWindow, now: now) {
+                return "\(percent) \(reset)"
+            }
+            return percent
         case .pace:
             // Pace can be temporarily unavailable near a reset or when a provider omits window metadata.
             // Keep the selected quota visible instead of collapsing the status item to an icon-only state.

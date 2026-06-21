@@ -615,6 +615,9 @@ struct CodexManagedRoutingTests {
         let account = context.fetcher.loadAccountInfo()
         #expect(account.email == "override@example.com")
         #expect(account.plan == "pro")
+        let resetCreditEnv = store.codexResetCreditEnvironment(
+            codexActiveSourceOverride: .managedAccount(id: managedAccount.id))
+        #expect(resetCreditEnv["CODEX_HOME"] == managedHome.path)
         #expect(settings.codexActiveSource == .liveSystem)
     }
 

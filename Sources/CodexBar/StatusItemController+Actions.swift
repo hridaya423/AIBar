@@ -323,17 +323,6 @@ extension StatusItemController: StatusItemMenuPersistentActionDelegate {
         return host == "chatgpt.com" || host.hasSuffix(".chatgpt.com")
     }
 
-    @objc func openStatusPage() {
-        let preferred = self.lastMenuProvider
-            ?? (self.store.isEnabled(.codex) ? .codex : self.store.enabledProviders().first)
-
-        let provider = preferred ?? .codex
-        let meta = self.store.metadata(for: provider)
-        let urlString = meta.statusPageURL ?? meta.statusLinkURL
-        guard let urlString, let url = URL(string: urlString) else { return }
-        NSWorkspace.shared.open(url)
-    }
-
     @objc func openChangelog() {
         let preferred = self.lastMenuProvider
             ?? (self.store.isEnabled(.codex) ? .codex : self.store.enabledProviders().first)

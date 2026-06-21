@@ -112,8 +112,6 @@ extension StatusItemController {
             "refreshAugmentSession"
         case .dashboard:
             "dashboard"
-        case .statusPage:
-            "statusPage"
         case .changelog:
             "changelog"
         case .addCodexAccount:

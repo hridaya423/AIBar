@@ -53,7 +53,8 @@ extension StatusItemController {
                 showsSubmenuIndicator: submenu != nil,
                 submenuIndicatorAlignment: submenuIndicatorAlignment,
                 submenuIndicatorTopPadding: submenuIndicatorTopPadding,
-                refreshMonitor: self.menuCardRefreshMonitor)
+                refreshMonitor: self.menuCardRefreshMonitor,
+                resetCreditConsumer: self.consumeCodexResetCredit(_:))
             {
                 view
             }
@@ -69,7 +70,8 @@ extension StatusItemController {
                 showsSubmenuIndicator: submenu != nil,
                 submenuIndicatorAlignment: submenuIndicatorAlignment,
                 submenuIndicatorTopPadding: submenuIndicatorTopPadding,
-                refreshMonitor: self.menuCardRefreshMonitor)
+                refreshMonitor: self.menuCardRefreshMonitor,
+                resetCreditConsumer: self.consumeCodexResetCredit(_:))
             {
                 view
             }

@@ -180,6 +180,7 @@ extension UsageStore {
         if !shouldPreservePriorState {
             self.codexAccountSnapshots = currentSnapshots
             self.codexAccountUsageSnapshotStore?.store(currentSnapshots)
+            self.updateCodexAccountActivity()
         }
 
         let selectionStillMatches = self.codexVisibleSelectionStillMatches(
@@ -1184,7 +1185,17 @@ extension UsageStore {
         self.lastFetchAttempts[.codex] = outcome.attempts
         switch outcome.result {
         case .success:
-            guard let snapshot else { return }
+            guard var snapshot else { return }
+            // Reset credits are decoupled from the "credits + extra usage" toggle so banked resets
+            // always surface (including in the multi-account path), even when other optional
+            // sections are hidden.
+            let resetCreditEnv = self
+                .codexResetCreditEnvironment(codexActiveSourceOverride: account.selectionSource)
+            snapshot = await snapshot.withCodexResetCredits(
+                self.fetchCodexResetCreditsIfAvailable(env: resetCreditEnv) ??
+                    snapshot.codexResetCredits ??
+                    self.snapshots[.codex]?.codexResetCredits)
+            self.handleCodexResetCreditNotifications(snapshot: snapshot)
             self.handleSessionQuotaTransition(provider: .codex, snapshot: snapshot)
             self.lastKnownResetSnapshots[.codex] = snapshot
             self.lastCodexAccountScopedRefreshGuard = Self.codexScopedRefreshGuard(for: account)
@@ -1199,6 +1210,7 @@ extension UsageStore {
             await self.recordPlanUtilizationHistorySample(provider: .codex, snapshot: snapshot)
             guard self.isCurrentProviderRefreshGeneration(.codex, generation: generation) else { return }
             self.recordCodexHistoricalSampleIfNeeded(snapshot: snapshot)
+            self.refreshCodexUsagePatternIfNeeded()
         case let .failure(error):
             guard let message = self.tokenAccountErrorMessage(error) else {
                 self.errors[.codex] = nil

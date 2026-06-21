@@ -245,7 +245,7 @@ extension StatusItemController {
         let showBrandPercent = self.settings.menuBarShowsBrandIconWithPercent
         let primaryProvider = self.primaryProviderForUnifiedIcon()
         let resolverStyle = self.store.style(for: primaryProvider)
-        let snapshot = self.store.snapshot(for: primaryProvider)
+        let snapshot = self.store.menuBarIconSnapshot(for: primaryProvider)
         let warningFlash = self.quotaWarningFlashActive(provider: primaryProvider)
 
         // IconRenderer treats these values as a left-to-right "progress fill" percentage; depending on the
@@ -429,7 +429,7 @@ extension StatusItemController {
     @discardableResult
     func applyIcon(for provider: UsageProvider, phase: Double?) -> Bool {
         guard let button = self.statusItems[provider]?.button else { return false }
-        let snapshot = self.store.snapshot(for: provider)
+        let snapshot = self.store.menuBarIconSnapshot(for: provider)
         // IconRenderer treats these values as a left-to-right "progress fill" percentage; depending on the
         // user setting we pass either "percent left" or "percent used".
         let showUsed = self.settings.usageBarsShowUsed
@@ -739,7 +739,7 @@ extension StatusItemController {
             now: now)
         let pace: UsagePace?
         switch mode {
-        case .percent:
+        case .percent, .percentAndReset:
             pace = nil
         case .pace, .both:
             let paceWindow: RateWindow? = if let codexProjection {
@@ -771,6 +771,16 @@ extension StatusItemController {
                 UsageFormatter
                     .creditsString(from: creditsRemaining)
                     .replacingOccurrences(of: " left", with: "")
+        }
+        if provider == .codex,
+           mode == .percentAndReset,
+           let combinedText = MenuBarDisplayText.codexCombinedPercentAndResetText(
+               sessionWindow: codexProjection?.rateWindow(for: .session),
+               weeklyWindow: codexProjection?.rateWindow(for: .weekly),
+               showUsed: self.settings.usageBarsShowUsed,
+               now: now)
+        {
+            return combinedText
         }
         if provider == .codex,
            mode == .percent,

@@ -1204,6 +1204,8 @@ extension StatusItemController {
         let hasExtraUsage = layoutModel.providerCost != nil
         let hasCost = layoutModel.tokenUsage != nil
         let hasStorage = self.store.storageFootprintText(for: provider) != nil
+        let hasResetCredits = provider == .codex &&
+            (self.store.snapshot(for: .codex)?.codexResetCredits?.availableCount ?? 0) > 0
         let bottomPadding = CGFloat(hasCredits ? 4 : 6)
         let sectionSpacing = CGFloat(6)
         let usageBottomPadding = bottomPadding
@@ -1246,7 +1248,13 @@ extension StatusItemController {
                 containsInteractiveControls: true))
         }
 
-        if hasStorage || hasCredits || hasExtraUsage || hasCost {
+        if hasResetCredits || hasStorage || hasCredits || hasExtraUsage || hasCost {
+            addSectionSeparator()
+        }
+
+        if self.addCodexResetCreditsMenuItemIfNeeded(to: menu, provider: provider),
+           hasStorage || hasCredits || hasExtraUsage || hasCost
+        {
             addSectionSeparator()
         }
 

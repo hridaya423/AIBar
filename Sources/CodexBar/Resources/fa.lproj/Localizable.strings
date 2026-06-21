@@ -302,6 +302,8 @@
 "Stored in ~/.codexbar/config.json. You can also provide KILO_API_KEY or " = "ذخیره شده در ~/.codexbar/config.json. همچنین می توانید KILO_API_KEY or  ارائه دهید";
 "Stores local Codex usage history (8 weeks) to personalize Pace predictions." = "تاریخچه استفاده Codex محلی (۸ هفته) را برای شخصی سازی پیش بینی های سرعت ذخیره می کند.";
 "Subscription Utilization" = "استفاده از اشتراک";
+"Subscription value this month" = "ارزش اشتراک در این ماه";
+"Estimate sharpens as your weekly limit fills." = "این برآورد با پر شدن محدودیت هفتگی شما دقیق‌تر می‌شود.";
 "Surprise me" = "سورپرایزم کن";
 "Switcher shows icons" = "سوئیچر آیکون ها را نشان می دهد";
 "Symlink CodexBarCLI to /usr/local/bin and /opt/homebrew/bin as codexbar." = "Symlink CodexBarCLI به /usr/local/bin و /opt/homebrew/bin به عنوان codexbar.";
@@ -640,6 +642,8 @@
 "display_mode_pace_desc" = "نمایش شاخص سرعت (مثلا +5%)";
 "display_mode_both_desc" = "هم درصد و هم سرعت را نشان دهید (مثلا 45% · +5%)";
 "display_mode_reset_time_desc" = "زمان بازنشانی متریک انتخاب شده را نشان دهید (مثلا ↻ ساعت ۳:۵۶ بعدازظهر)";
+"display_mode_percent_and_reset" = "درصد + بازنشانی";
+"display_mode_percent_and_reset_desc" = "نمایش درصد باقی‌مانده و شمارش معکوس بازنشانی (مثلا 42% 4h · W 78% 3d برای Codex)";
 
 /* Provider status */
 "status_operational" = "عملیاتی";
@@ -1099,7 +1103,20 @@
 "Limit Reset Credits" = "اعتبارهای بازنشانی محدودیت";
 "1 manual reset available" = "۱ بازنشانی دستی موجود است";
 "%d manual resets available" = "%d بازنشانی دستی موجود است";
+"↻ Reset available — use it to keep going" = "↻ بازنشانی موجود است — برای ادامه از آن استفاده کنید";
+"Reset bank" = "بانک بازنشانی";
 "Next expires %@" = "مورد بعدی در %@ منقضی می‌شود";
+"Use Reset" = "استفاده از بازنشانی";
+"Use the next expiring Codex reset credit" = "از اعتبار بازنشانی Codex که زودتر منقضی می‌شود استفاده کن";
+"No expiry" = "بدون انقضا";
+"Codex reset expires soon" = "بازنشانی Codex به‌زودی منقضی می‌شود";
+"A Codex reset credit expires %@." = "یک اعتبار بازنشانی Codex در %@ منقضی می‌شود.";
+"Use Codex reset?" = "از بازنشانی Codex استفاده شود؟";
+"This spends one banked Codex reset credit now." = "این کار اکنون یک اعتبار بازنشانی ذخیره‌شده Codex را مصرف می‌کند.";
+"Codex reset used" = "بازنشانی Codex استفاده شد";
+"%d window reset." = "%d پنجره بازنشانی شد.";
+"Codex reset failed" = "بازنشانی Codex ناموفق بود";
+"Available reset" = "Available reset";
 "byte_unit_byte" = "بایت";
 "byte_unit_bytes" = "بایت";
 "byte_unit_kilobyte" = "کیلوبایت";

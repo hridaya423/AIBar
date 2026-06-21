@@ -85,6 +85,13 @@ extension StatusItemController {
                 self.store.weeklyPace(provider: target, window: window, now: now)
             }
         }
+        let codexSessionPace: UsagePace? = if target == .codex,
+                                              let session = codexProjection?.rateWindow(for: .session)
+        {
+            self.store.codexSessionPace(provider: target, window: session, now: now)
+        } else {
+            nil
+        }
         let fallbackAccount = accountOverride
             ?? (metadata.usesAccountFallback
                 ? self.store.accountInfo(for: target)
@@ -114,6 +121,7 @@ extension StatusItemController {
             kiloAutoMode: kiloAutoMode,
             hidePersonalInfo: self.settings.hidePersonalInfo,
             weeklyPace: weeklyPace,
+            codexSessionPace: codexSessionPace,
             quotaWarningThresholds: [
                 .session: self.quotaWarningMarkerThresholds(provider: target, window: .session),
                 .weekly: self.quotaWarningMarkerThresholds(provider: target, window: .weekly),

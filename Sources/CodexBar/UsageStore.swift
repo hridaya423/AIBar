@@ -137,6 +137,9 @@ final class UsageStore {
     var lastFetchAttempts: [UsageProvider: [ProviderFetchAttempt]] = [:]
     var accountSnapshots: [UsageProvider: [TokenAccountUsageSnapshot]] = [:]
     var codexAccountSnapshots: [CodexAccountUsageSnapshot] = []
+    @ObservationIgnored var codexAccountActivity = CodexAccountActivityState()
+    @ObservationIgnored var codexUsagePattern: CodexUsagePatternModel?
+    @ObservationIgnored var codexUsagePatternBuiltAt: Date?
     var kiloScopeSnapshots: [KiloScopeSnapshot] = []
     var tokenSnapshots: [UsageProvider: CostUsageTokenSnapshot] = [:]
     var tokenErrors: [UsageProvider: String] = [:]
@@ -592,7 +595,9 @@ final class UsageStore {
                             coalesceIfRefreshing: coalesceProviderRefreshesOverride ??
                                 (ProviderInteractionContext.current == .background))
                     }
-                    if availableRefreshProviders.contains(provider) {
+                    if availableRefreshProviders.contains(provider),
+                       self.providerSupportsStatusChecks(provider)
+                    {
                         group.addTask { await self.refreshProviderStatus(provider) }
                     }
                 }
@@ -872,6 +877,15 @@ final class UsageStore {
         self.sessionQuotaLogger.info(message)
 
         self.sessionQuotaNotifier.post(transition: transition, provider: provider, badge: nil)
+    }
+
+    /// Whether the provider exposes a status endpoint worth scheduling a refresh task for.
+    /// Most providers have no status page, so skipping them avoids spawning no-op refresh tasks.
+    /// The test override forces a status fetch regardless of metadata.
+    func providerSupportsStatusChecks(_ provider: UsageProvider) -> Bool {
+        if self._test_providerStatusFetchOverride != nil { return true }
+        guard let meta = self.providerMetadata[provider] else { return false }
+        return meta.statusPageURL != nil || meta.statusWorkspaceProductID != nil
     }
 
     func refreshProviderStatus(_ provider: UsageProvider) async {
@@ -1545,7 +1559,8 @@ extension UsageStore {
                         forceRefresh: force,
                         allowVertexClaudeFallback: !self.isEnabled(.claude),
                         codexHomePath: costScope.codexHomePath,
-                        historyDays: historyDays)
+                        historyDays: historyDays,
+                        includeOpenCodeUsage: provider == .codex)
                 }
                 group.addTask {
                     try await Task.sleep(nanoseconds: UInt64(timeoutSeconds * 1_000_000_000))

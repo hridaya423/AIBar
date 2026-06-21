@@ -302,6 +302,8 @@
 "Stored in ~/.codexbar/config.json. You can also provide KILO_API_KEY or " = "Stored in ~/.codexbar/config.json. You can also provide KILO_API_KEY or ";
 "Stores local Codex usage history (8 weeks) to personalize Pace predictions." = "Stores local Codex usage history (8 weeks) to personalize Pace predictions.";
 "Subscription Utilization" = "Subscription Utilization";
+"Subscription value this month" = "Subscription value this month";
+"Estimate sharpens as your weekly limit fills." = "Estimate sharpens as your weekly limit fills.";
 "Surprise me" = "Surprise me";
 "Switcher shows icons" = "Switcher shows icons";
 "Symlink CodexBarCLI to /usr/local/bin and /opt/homebrew/bin as codexbar." = "Symlink CodexBarCLI to /usr/local/bin and /opt/homebrew/bin as codexbar.";
@@ -640,6 +642,8 @@
 "display_mode_pace_desc" = "Show pace indicator (e.g. +5%)";
 "display_mode_both_desc" = "Show both percentage and pace (e.g. 45% · +5%)";
 "display_mode_reset_time_desc" = "Show the reset time for the selected metric (e.g. ↻ 3:56 PM)";
+"display_mode_percent_and_reset" = "Percent + reset";
+"display_mode_percent_and_reset_desc" = "Show remaining % and reset countdown (e.g. 42% 4h · W 78% 3d for Codex)";
 
 /* Provider status */
 "status_operational" = "Operational";
@@ -900,7 +904,7 @@
 "Unavailable" = "Unavailable";
 "Weekly" = "Weekly";
 "not detected" = "not detected";
-"Estimated from local Codex logs for the selected account." = "Estimated from local Codex logs for the selected account.";
+"Estimated from local Codex logs for the selected account." = "Estimated from local Codex + OpenCode usage, token-priced.";
 "minimax_usage_amount_format" = "Usage: %@ / %@";
 "minimax_used_percent_format" = "Used %@";
 "minimax_service_text_generation" = "Text Generation";
@@ -1097,9 +1101,22 @@
 "language_persian" = "فارسی";
 "language_thai" = "ไทย";
 "Limit Reset Credits" = "Limit Reset Credits";
-"1 manual reset available" = "1 manual reset available";
-"%d manual resets available" = "%d manual resets available";
+"1 manual reset available" = "1 reset available";
+"%d manual resets available" = "%d resets available";
+"↻ Reset available — use it to keep going" = "↻ Reset available — use it to keep going";
+"Reset bank" = "Reset bank";
 "Next expires %@" = "Next expires %@";
+"Use Reset" = "Use Reset";
+"Use the next expiring Codex reset credit" = "Use the next expiring Codex reset credit";
+"No expiry" = "No expiry";
+"Codex reset expires soon" = "Codex reset expires soon";
+"A Codex reset credit expires %@." = "A Codex reset credit expires %@.";
+"Use Codex reset?" = "Use Codex reset?";
+"This spends one banked Codex reset credit now." = "This spends one banked Codex reset credit now.";
+"Codex reset used" = "Codex reset used";
+"%d window reset." = "%d window reset.";
+"Codex reset failed" = "Codex reset failed";
+"Available reset" = "Available reset";
 "byte_unit_byte" = "byte";
 "byte_unit_bytes" = "bytes";
 "byte_unit_kilobyte" = "kilobyte";

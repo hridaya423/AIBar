@@ -94,9 +94,14 @@ enum UsagePaceText {
 
     static func sessionDetail(provider: UsageProvider, window: RateWindow, now: Date = .init()) -> WeeklyDetail? {
         guard let pace = sessionPace(provider: provider, window: window, now: now) else { return nil }
-        return WeeklyDetail(
-            leftLabel: Self.detailLeftLabel(for: pace),
-            rightLabel: Self.detailRightLabel(for: pace, context: .session, now: now),
+        return Self.sessionDetail(pace: pace, now: now)
+    }
+
+    /// Builds the session detail from an already-resolved pace (e.g. the weekday×hour pattern pace).
+    static func sessionDetail(pace: UsagePace, now: Date = .init()) -> WeeklyDetail {
+        WeeklyDetail(
+            leftLabel: self.detailLeftLabel(for: pace),
+            rightLabel: self.detailRightLabel(for: pace, context: .session, now: now),
             expectedUsedPercent: pace.expectedUsedPercent,
             stage: pace.stage)
     }

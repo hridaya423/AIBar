@@ -24,7 +24,7 @@ extension StatusItemController {
     /// Identifies leaf AppKit image items that should be replaced instead of updated in place.
     ///
     /// AppKit can retain stale layout state for standard image-backed menu items after repeated
-    /// in-place updates, which makes rows such as "Status Page" drift horizontally. Submenu rows
+    /// in-place updates, which makes rows such as "Usage Dashboard" drift horizontally. Submenu rows
     /// stay on the normal reconciliation path because replacing their parent item can disturb an
     /// active submenu.
     private func shouldReplaceNativeImageItemDuringReconcile(_ item: NSMenuItem) -> Bool {

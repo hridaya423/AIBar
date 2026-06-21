@@ -6,6 +6,28 @@ extension UsageStore {
         self.tokenSnapshots[provider]
     }
 
+    /// Token-priced estimate of monthly subscription value vs. month-to-date spend, anchored on the
+    /// weekly rate limit. Currently Codex-only (its token cost already folds in OpenCode usage).
+    func subscriptionUtilizationEstimate(
+        for provider: UsageProvider,
+        now: Date = Date()) -> SubscriptionUtilizationEstimate?
+    {
+        guard provider == .codex,
+              let tokenSnapshot = self.tokenSnapshot(for: provider)
+        else {
+            return nil
+        }
+        let weekly = self.codexConsumerProjection(surface: .menuBar, now: now).rateWindow(for: .weekly)
+        guard let weekly else { return nil }
+        return SubscriptionUtilizationCalculator.estimate(
+            daily: tokenSnapshot.daily,
+            weeklyUsedPercent: weekly.usedPercent,
+            weeklyResetsAt: weekly.resetsAt,
+            weeklyWindowMinutes: weekly.windowMinutes,
+            currencyCode: tokenSnapshot.currencyCode,
+            now: now)
+    }
+
     func tokenError(for provider: UsageProvider) -> String? {
         self.tokenErrors[provider]
     }

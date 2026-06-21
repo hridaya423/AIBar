@@ -1085,6 +1085,7 @@ struct UsageStorePlanUtilizationTests {
         let providerURL = try #require(store.planUtilizationHistoryStore.directoryURL?
             .appendingPathComponent("zai.json", isDirectory: false))
 
+        store.settings.historicalTrackingEnabled = false
         #expect(store.settings.historicalTrackingEnabled == false)
         #expect(store.supportsPlanUtilizationHistory(for: .zai) == false)
         await store.recordPlanUtilizationHistorySample(provider: .zai, snapshot: before, now: before.updatedAt)

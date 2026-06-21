@@ -13,7 +13,7 @@
 
 Tiny macOS 14+ menu bar app that keeps **AI coding-provider limits visible** and shows when each window resets. Codex, OpenAI, Claude, Cursor, Gemini, Copilot, Grok, GroqCloud, ElevenLabs, Deepgram, z.ai, MiniMax, Kiro, Zed, Vertex AI, Augment, OpenRouter, LiteLLM, LLM Proxy, Codebuff, Command Code, AWS Bedrock, and many newer coding providers. One status item per provider, or Merge Icons mode with a provider switcher. No Dock icon, minimal UI, dynamic bar icons.
 
-<img src="codexbar.png" alt="CodexBar menu popover with provider tiles, usage bars, and reset countdowns" width="520" />
+<img src="docs/codexbar.png" alt="CodexBar menu popover with provider tiles, usage bars, and reset countdowns" width="520" />
 
 ## Why
 
@@ -148,6 +148,15 @@ show an incident indicator.
 - Localized app and website with a shared 21-language catalog, automatic website detection, persistent pickers, and RTL support.
 - Optional session quota notifications and weekly-reset confetti.
 - Privacy-first: on-device parsing by default; browser cookies are opt-in and reused (no passwords stored).
+
+## Improvements that I have added:
+
+- Provider settings improvements including searchable provider selection in the sidebar.
+- Local OpenCode SQLite token-cost history support for Codex/OpenAI usage and cost reconstruction.
+- Subscription value estimates that project monthly spend utilization from weekly quota fill.
+- Codex manual reset credits: show available resets, next expiry, consume the next expiring reset from the menu or Settings, and warn before a reset credit expires.
+- Smarter Codex pacing and account focus: historical weekday/hour usage patterns, active-account prioritization, and nearest-reset fallback when every session window is exhausted.
+- New compact menu bar text mode for percent + reset countdown, including combined Codex session and weekly labels.
 
 ## Privacy note
 Wondering if CodexBar scans your disk? It doesn’t crawl your filesystem; it reads a small set of known locations (browser cookies/local storage, provider config files, local JSONL logs) when the related features are enabled. Provider tokens and token-account settings live in the CodexBar config file with restrictive file permissions. See the discussion and audit notes in [issue #12](https://github.com/steipete/CodexBar/issues/12).

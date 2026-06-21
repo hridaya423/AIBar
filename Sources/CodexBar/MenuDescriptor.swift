@@ -32,7 +32,6 @@ struct MenuDescriptor {
         case installUpdate = "arrow.down.circle"
         case refresh = "arrow.clockwise"
         case dashboard = "chart.bar"
-        case statusPage = "waveform.path.ecg"
         case changelog = "list.bullet.rectangle"
         case addAccount = "plus"
         case systemAccount = "person.crop.circle"
@@ -56,7 +55,6 @@ struct MenuDescriptor {
         case refresh
         case refreshAugmentSession
         case dashboard
-        case statusPage
         case changelog
         case addCodexAccount
         case requestCodexSystemPromotion(UUID)
@@ -633,9 +631,7 @@ struct MenuDescriptor {
         if metadata?.dashboardURL != nil {
             entries.append(.action(L("Usage Dashboard"), .dashboard))
         }
-        if metadata?.statusPageURL != nil || metadata?.statusLinkURL != nil {
-            entries.append(.action(L("Status Page"), .statusPage))
-        }
+
         if store.settings.providerChangelogLinksEnabled, metadata?.changelogURL != nil {
             entries.append(.action(L("Changelog"), .changelog))
         }
@@ -771,7 +767,6 @@ extension MenuDescriptor.MenuAction {
         case .refresh: MenuDescriptor.MenuActionSystemImage.refresh.rawValue
         case .refreshAugmentSession: MenuDescriptor.MenuActionSystemImage.refresh.rawValue
         case .dashboard: MenuDescriptor.MenuActionSystemImage.dashboard.rawValue
-        case .statusPage: MenuDescriptor.MenuActionSystemImage.statusPage.rawValue
         case .changelog: MenuDescriptor.MenuActionSystemImage.changelog.rawValue
         case .addCodexAccount, .addProviderAccount: MenuDescriptor.MenuActionSystemImage.addAccount.rawValue
         case .requestCodexSystemPromotion:

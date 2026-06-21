@@ -10,19 +10,7 @@ public struct MoonshotSettingsReader: Sendable {
     public static func apiKey(
         environment: [String: String] = ProcessInfo.processInfo.environment) -> String?
     {
-        for key in self.apiKeyEnvironmentKeys {
-            guard let raw = environment[key]?.trimmingCharacters(in: .whitespacesAndNewlines),
-                  !raw.isEmpty
-            else {
-                continue
-            }
-            let cleaned = Self.cleaned(raw)
-            if !cleaned.isEmpty {
-                return cleaned
-            }
-        }
-
-        return nil
+        ProviderSettingsReaderSupport.firstValue(keys: self.apiKeyEnvironmentKeys, environment: environment)
     }
 
     public static func region(
@@ -31,17 +19,7 @@ public struct MoonshotSettingsReader: Sendable {
         guard let raw = environment[self.regionEnvironmentKey] else {
             return .international
         }
-        let cleaned = Self.cleaned(raw).lowercased()
+        let cleaned = ProviderSettingsReaderSupport.cleaned(raw)?.lowercased() ?? ""
         return MoonshotRegion(rawValue: cleaned) ?? .international
-    }
-
-    private static func cleaned(_ raw: String) -> String {
-        var value = raw
-        if (value.hasPrefix("\"") && value.hasSuffix("\""))
-            || (value.hasPrefix("'") && value.hasSuffix("'"))
-        {
-            value = String(value.dropFirst().dropLast())
-        }
-        return value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

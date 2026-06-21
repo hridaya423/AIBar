@@ -48,7 +48,8 @@ public struct CostUsageFetcher: Sendable {
         allowVertexClaudeFallback: Bool = false,
         codexHomePath: String? = nil,
         historyDays: Int = 30,
-        refreshPricingInBackground: Bool = true) async throws -> CostUsageTokenSnapshot
+        refreshPricingInBackground: Bool = true,
+        includeOpenCodeUsage: Bool = false) async throws -> CostUsageTokenSnapshot
     {
         try await Self.loadTokenSnapshot(
             provider: provider,
@@ -59,30 +60,8 @@ public struct CostUsageFetcher: Sendable {
             codexHomePath: codexHomePath,
             historyDays: historyDays,
             refreshPricingInBackground: refreshPricingInBackground,
+            includeOpenCodeUsage: includeOpenCodeUsage,
             scannerOptions: self.scannerOptionsOverride())
-    }
-
-    @available(*, deprecated, message: "Codex token-cost scans are uncapped; this limit is ignored.")
-    public func loadTokenSnapshot(
-        provider: UsageProvider,
-        environment: [String: String] = ProcessInfo.processInfo.environment,
-        now: Date = Date(),
-        forceRefresh: Bool = false,
-        allowVertexClaudeFallback: Bool = false,
-        codexHomePath: String? = nil,
-        historyDays: Int = 30,
-        refreshPricingInBackground: Bool = true,
-        automaticCodexScanByteLimit _: Int64?) async throws -> CostUsageTokenSnapshot
-    {
-        try await self.loadTokenSnapshot(
-            provider: provider,
-            environment: environment,
-            now: now,
-            forceRefresh: forceRefresh,
-            allowVertexClaudeFallback: allowVertexClaudeFallback,
-            codexHomePath: codexHomePath,
-            historyDays: historyDays,
-            refreshPricingInBackground: refreshPricingInBackground)
     }
 
     private func scannerOptionsOverride() -> CostUsageScanner.Options? {
@@ -98,6 +77,7 @@ public struct CostUsageFetcher: Sendable {
         codexHomePath: String? = nil,
         historyDays: Int = 30,
         refreshPricingInBackground: Bool = true,
+        includeOpenCodeUsage: Bool = false,
         scannerOptions overrideScannerOptions: CostUsageScanner.Options? = nil,
         piScannerOptions overridePiScannerOptions: PiSessionCostScanner
             .Options? = nil) async throws -> CostUsageTokenSnapshot
@@ -198,6 +178,18 @@ public struct CostUsageFetcher: Sendable {
                     checkCancellation: checkCancellation)
                 try checkCancellation()
                 daily = CostUsageDailyReport.merged([daily, piReport])
+            }
+
+            // Fold OpenCode's local usage into the Codex section so the spend reflects the user's
+            // Codex subscription wherever they use it (Codex app + OpenCode), token-priced via
+            // models.dev. The reader returns an empty report when OpenCode is not installed.
+            if provider == .codex, includeOpenCodeUsage {
+                let openCodeReport = OpenCodeTokenCostReader(cacheRoot: scanOptions.cacheRoot)
+                    .loadDailyReport(since: since, until: until, now: now)
+                try checkCancellation()
+                if !openCodeReport.data.isEmpty {
+                    daily = CostUsageDailyReport.merged([daily, openCodeReport])
+                }
             }
             return daily
         }

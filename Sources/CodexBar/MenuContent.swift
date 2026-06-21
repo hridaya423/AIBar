@@ -116,8 +116,6 @@ struct MenuContent: View {
             self.actions.installUpdate()
         case .dashboard:
             self.actions.openDashboard()
-        case .statusPage:
-            self.actions.openStatusPage()
         case .changelog:
             self.actions.openChangelog()
         case .addCodexAccount:
@@ -151,7 +149,6 @@ struct MenuActions {
     let refresh: () -> Void
     let refreshAugmentSession: () -> Void
     let openDashboard: () -> Void
-    let openStatusPage: () -> Void
     let openChangelog: () -> Void
     let addCodexAccount: () -> Void
     let switchAccount: (UsageProvider) -> Void

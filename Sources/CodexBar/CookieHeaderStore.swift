@@ -30,8 +30,10 @@ struct KeychainCookieHeaderStore: CookieHeaderStoring {
 
     // Cache to reduce keychain access frequency
     private nonisolated(unsafe) static var cache: [String: CachedValue] = [:]
+    private nonisolated(unsafe) static var deniedCache: [String: Date] = [:]
     private static let cacheLock = NSLock()
     private static let cacheTTL: TimeInterval = 1800 // 30 minutes
+    private static let deniedCacheTTL: TimeInterval = 24 * 60 * 60 // 24 hours
 
     private struct CachedValue {
         let value: String?
@@ -42,6 +44,25 @@ struct KeychainCookieHeaderStore: CookieHeaderStoring {
         }
     }
 
+    private static func isDenied(_ account: String) -> Bool {
+        self.cacheLock.lock()
+        defer { Self.cacheLock.unlock() }
+        guard let deniedAt = deniedCache[account] else { return false }
+        return Date().timeIntervalSince(deniedAt) < Self.deniedCacheTTL
+    }
+
+    private static func recordDenied(_ account: String) {
+        self.cacheLock.lock()
+        self.deniedCache[account] = Date()
+        self.cacheLock.unlock()
+    }
+
+    private static func clearDenied(_ account: String) {
+        self.cacheLock.lock()
+        self.deniedCache.removeValue(forKey: account)
+        self.cacheLock.unlock()
+    }
+
     init(account: String, promptKind: KeychainPromptContext.Kind) {
         self.account = account
         self.promptKind = promptKind
@@ -50,6 +71,10 @@ struct KeychainCookieHeaderStore: CookieHeaderStoring {
     func loadCookieHeader() throws -> String? {
         guard !KeychainAccessGate.isDisabled else {
             Self.log.debug("Keychain access disabled; skipping cookie load")
+            return nil
+        }
+        guard !Self.isDenied(self.account) else {
+            Self.log.debug("Keychain access was recently denied for \(self.account); skipping cookie load")
             return nil
         }
         // Check cache first
@@ -72,10 +97,9 @@ struct KeychainCookieHeaderStore: CookieHeaderStoring {
         if case .interactionRequired = KeychainAccessPreflight
             .checkGenericPassword(service: self.service, account: self.account)
         {
-            KeychainPromptHandler.handler?(KeychainPromptContext(
-                kind: self.promptKind,
-                service: self.service,
-                account: self.account))
+            Self.recordDenied(self.account)
+            Self.log.debug("Keychain interaction required for \(self.account); suppressing repeated prompts")
+            return nil
         }
 
         let status = SecItemCopyMatching(query as CFDictionary, &result)
@@ -101,6 +125,7 @@ struct KeychainCookieHeaderStore: CookieHeaderStoring {
         Self.cacheLock.lock()
         Self.cache[self.account] = CachedValue(value: finalValue, timestamp: Date())
         Self.cacheLock.unlock()
+        Self.clearDenied(self.account)
 
         return finalValue
     }
@@ -146,6 +171,7 @@ struct KeychainCookieHeaderStore: CookieHeaderStoring {
             Self.cacheLock.lock()
             Self.cache[self.account] = CachedValue(value: raw, timestamp: Date())
             Self.cacheLock.unlock()
+            Self.clearDenied(self.account)
             return
         }
         if updateStatus != errSecItemNotFound {
@@ -167,6 +193,7 @@ struct KeychainCookieHeaderStore: CookieHeaderStoring {
         Self.cacheLock.lock()
         Self.cache[self.account] = CachedValue(value: raw, timestamp: Date())
         Self.cacheLock.unlock()
+        Self.clearDenied(self.account)
     }
 
     private func deleteIfPresent() throws {

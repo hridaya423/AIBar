@@ -7,7 +7,6 @@ extension StatusItemController {
         case .refresh: (#selector(self.refreshMenuItem(_:)), nil)
         case .refreshAugmentSession: (#selector(self.refreshAugmentSession), nil)
         case .dashboard: (#selector(self.openDashboard), nil)
-        case .statusPage: (#selector(self.openStatusPage), nil)
         case .changelog: (#selector(self.openChangelog), nil)
         case .addCodexAccount: (#selector(self.addManagedCodexAccountFromMenu(_:)), nil)
         case let .addProviderAccount(provider): (#selector(self.runSwitchAccount(_:)), provider.rawValue)

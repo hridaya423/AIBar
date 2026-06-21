@@ -39,12 +39,14 @@ struct CodexResetCreditsMenuCardTests {
             showOptionalUsage: true,
             now: now))
 
-        #expect(model.codexResetCreditsText == "1 manual reset available")
-        #expect(model.codexResetCreditsDetailText == "Next expires in 1d")
+        #expect(model.codexResetCredits?.text == "1 reset available")
+        #expect(model.codexResetCredits?.detailText == "Next expires in 1d")
+        #expect(model.codexResetCredits?.helpText?.contains("available, in 1d (") == true)
+        #expect(model.codexResetCredits?.creditToConsume?.id == "reset-1")
     }
 
     @Test
-    func `reset credits hide with optional usage disabled`() throws {
+    func `reset credits render when optional usage disabled`() throws {
         let metadata = try #require(ProviderDefaults.metadata[.codex])
         let now = Date(timeIntervalSince1970: 1_781_726_400)
         let usage = UsageSnapshot(
@@ -62,8 +64,8 @@ struct CodexResetCreditsMenuCardTests {
             showOptionalUsage: false,
             now: now))
 
-        #expect(model.codexResetCreditsText == nil)
-        #expect(model.codexResetCreditsDetailText == nil)
+        // Reset credits are decoupled from the "credits + extra usage" toggle: they still render.
+        #expect(model.codexResetCredits?.text == "2 resets available")
     }
 
     private static func input(

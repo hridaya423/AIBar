@@ -66,14 +66,12 @@ extension UsageMenuCardView.Model {
             !self.usageNotes.isEmpty ||
             self.openAIAPIUsage != nil ||
             self.inlineUsageDashboard != nil ||
-            self.codexResetCreditsText != nil ||
             self.placeholder != nil
     }
 
     var usesStackedDetailLayout: Bool {
         !self.metrics.isEmpty ||
             self.creditsText != nil ||
-            self.codexResetCreditsText != nil ||
             self.providerCost != nil ||
             self.tokenUsage != nil
     }
@@ -108,8 +106,7 @@ extension UsageMenuCardView.Model {
                   candidateText: candidate.creditsText,
                   candidateRemaining: candidate.creditsRemaining),
               self.creditsHintText == candidate.creditsHintText,
-              self.codexResetCreditsText == candidate.codexResetCreditsText,
-              self.codexResetCreditsDetailText == candidate.codexResetCreditsDetailText,
+              self.codexResetCredits == candidate.codexResetCredits,
               self.placeholder == candidate.placeholder,
               Self.hasCompatibleDashboardLayout(self.inlineUsageDashboard, candidate.inlineUsageDashboard),
               Self.hasCompatibleProviderCostLayout(self.providerCost, candidate.providerCost),
@@ -350,9 +347,15 @@ extension UsageMenuCardView.Model {
         provider: UsageProvider,
         window: RateWindow,
         now: Date,
-        showUsed: Bool) -> PaceDetail?
+        showUsed: Bool,
+        pace: UsagePace? = nil) -> PaceDetail?
     {
-        guard let detail = UsagePaceText.sessionDetail(provider: provider, window: window, now: now) else { return nil }
+        let resolvedDetail: UsagePaceText.WeeklyDetail? = if let pace {
+            UsagePaceText.sessionDetail(pace: pace, now: now)
+        } else {
+            UsagePaceText.sessionDetail(provider: provider, window: window, now: now)
+        }
+        guard let detail = resolvedDetail else { return nil }
         let expectedUsed = detail.expectedUsedPercent
         let actualUsed = window.usedPercent
         let expectedPercent = showUsed ? expectedUsed : (100 - expectedUsed)
@@ -365,6 +368,20 @@ extension UsageMenuCardView.Model {
             rightLabel: detail.rightLabel,
             pacePercent: pacePercent,
             paceOnTop: paceOnTop)
+    }
+
+    /// Smart reset nudge for the session row: only when the 5h window is spent, the weekly window
+    /// still has room, and a reset credit is banked. A manual reset only refreshes the session
+    /// limit, so it's pointless to suggest when the weekly cap is also exhausted.
+    static func codexSessionResetPrompt(
+        input: Input,
+        sessionWindow: RateWindow,
+        weeklyWindow: RateWindow?) -> String?
+    {
+        guard sessionWindow.remainingPercent <= 5 else { return nil }
+        guard (input.snapshot?.codexResetCredits?.availableCount ?? 0) > 0 else { return nil }
+        if let weeklyWindow, weeklyWindow.remainingPercent <= 0 { return nil }
+        return L("↻ Reset available — use it to keep going")
     }
 
     static func weeklyPaceDetail(
