@@ -1,4 +1,4 @@
-# CodexBar 🎚️ — May your tokens never run out.
+# AIBar 🎚️ — May your tokens never run out.
 
 > Every AI coding limit, in your menu bar.
 
@@ -9,11 +9,11 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-6e5aff?style=flat-square)](LICENSE)
 [![Site](https://img.shields.io/badge/site-codexbar.app-16d3b4?style=flat-square)](https://codexbar.app)
 
-<a href="https://codexbar.app"><img src="docs/social.png" alt="CodexBar — every AI coding limit in your menu bar. 53 providers." width="100%" /></a>
+<a href="https://codexbar.app"><img src="docs/social.png" alt="AIBar — every AI coding limit in your menu bar. 53 providers." width="100%" /></a>
 
 Tiny macOS 14+ menu bar app that keeps **AI coding-provider limits visible** and shows when each window resets. Codex, OpenAI, Claude, Cursor, Gemini, Copilot, Grok, GroqCloud, ElevenLabs, Deepgram, z.ai, MiniMax, Kiro, Zed, Vertex AI, Augment, OpenRouter, LiteLLM, LLM Proxy, Codebuff, Command Code, AWS Bedrock, and many newer coding providers. One status item per provider, or Merge Icons mode with a provider switcher. No Dock icon, minimal UI, dynamic bar icons.
 
-<img src="docs/codexbar.png" alt="CodexBar menu popover with provider tiles, usage bars, and reset countdowns" width="520" />
+<img src="docs/codexbar.png" alt="AIBar menu popover with provider tiles, usage bars, and reset countdowns" width="520" />
 
 ## Why
 
@@ -26,28 +26,26 @@ Tiny macOS 14+ menu bar app that keeps **AI coding-provider limits visible** and
 
 ### Requirements
 - macOS 14+ (Sonoma)
+- Swift 6.2+
 
-### GitHub Releases
-Download: <https://github.com/steipete/CodexBar/releases>
+### Build This Fork With Swift
+Clone this fork and build it locally:
 
-### Homebrew
 ```bash
-brew install --cask codexbar
+git clone https://github.com/hridaya423/AIBar
+cd AIBar
+swift build -c release
+./Scripts/package_app.sh
+open CodexBar.app
 ```
 
-### CLI Tarballs (macOS/Linux)
-Homebrew formula (Linux today):
+### CLI
+Build the bundled CLI from this fork with SwiftPM:
+
 ```bash
-brew install steipete/tap/codexbar
+swift build -c release --product CodexBarCLI
+.build/release/CodexBarCLI --help
 ```
-Arch Linux AUR package:
-```bash
-yay -S codexbar-cli
-```
-Or download release tarballs from GitHub Releases:
-- macOS: `CodexBarCLI-v<tag>-macos-arm64.tar.gz`, `CodexBarCLI-v<tag>-macos-x86_64.tar.gz`
-- Linux (glibc): `CodexBarCLI-v<tag>-linux-aarch64.tar.gz`, `CodexBarCLI-v<tag>-linux-x86_64.tar.gz`
-- Linux (static musl): `CodexBarCLI-v<tag>-linux-musl-aarch64.tar.gz`, `CodexBarCLI-v<tag>-linux-musl-x86_64.tar.gz`
 
 ### First run
 - Open Settings → Providers and enable what you use.
@@ -55,7 +53,7 @@ Or download release tarballs from GitHub Releases:
 - Optional: Settings → Providers → Codex → OpenAI cookies (Automatic or Manual) to add dashboard extras.
 
 ### Set API keys from the CLI
-Provider toggles and API keys live in the resolved CodexBar config file. New installs use
+Provider toggles and API keys live in the resolved AIBar config file. New installs use
 `~/.config/codexbar/config.json`; existing `~/.codexbar/config.json` installs still load from the legacy path. You can
 script the same provider list that Settings → Providers uses:
 
@@ -159,27 +157,27 @@ show an incident indicator.
 - New compact menu bar text mode for percent + reset countdown, including combined Codex session and weekly labels.
 
 ## Privacy note
-Wondering if CodexBar scans your disk? It doesn’t crawl your filesystem; it reads a small set of known locations (browser cookies/local storage, provider config files, local JSONL logs) when the related features are enabled. Provider tokens and token-account settings live in the CodexBar config file with restrictive file permissions. See the discussion and audit notes in [issue #12](https://github.com/steipete/CodexBar/issues/12).
+Wondering if AIBar scans your disk? It doesn’t crawl your filesystem; it reads a small set of known locations (browser cookies/local storage, provider config files, local JSONL logs) when the related features are enabled. Provider tokens and token-account settings live in the AIBar config file with restrictive file permissions. See the discussion and audit notes in [issue #12](https://github.com/steipete/CodexBar/issues/12).
 
 ## macOS permissions (why they’re needed)
 - **Full Disk Access (optional)**: only required to read Safari cookies/local storage for web-based providers. If you don’t grant it, use another supported browser, manual cookies/API keys, OAuth, or CLI/local sources where that provider supports them.
 - **Keychain access (prompted by macOS)**:
   - Chromium cookie import needs the browser “Safe Storage” key to decrypt cookies.
-  - Claude OAuth bootstrap may read the Claude CLI Keychain item when CodexBar has no usable cached credentials.
-  - CodexBar may use Keychain for browser cookie decryption, cached cookie headers, and OAuth/device-flow credentials where those sources require it.
+  - Claude OAuth bootstrap may read the Claude CLI Keychain item when AIBar has no usable cached credentials.
+  - AIBar may use Keychain for browser cookie decryption, cached cookie headers, and OAuth/device-flow credentials where those sources require it.
   - **How do I prevent those keychain alerts?**
     - Open **Keychain Access.app** → login keychain → search the prompted item (for Claude OAuth, usually “Claude Code-credentials”).
     - Open the item → **Access Control** → add `CodexBar.app` under “Always allow access by these applications”.
-    - Prefer adding just CodexBar (avoid “Allow all applications” unless you want it wide open).
-    - Relaunch CodexBar after saving.
+    - Prefer adding just AIBar (avoid “Allow all applications” unless you want it wide open).
+    - Relaunch AIBar after saving.
     - Reference screenshot: ![Keychain access control](docs/keychain-allow.png)
   - **How to do the same for the browser?**
     - Find the browser’s “Safe Storage” key (e.g., “Chrome Safe Storage”, “Brave Safe Storage”, “Microsoft Edge Safe Storage”).
     - Open the item → **Access Control** → add `CodexBar.app` under “Always allow access by these applications”.
-    - This removes the prompt when CodexBar decrypts cookies for that browser.
-  - **Last resort — stop all Keychain reads entirely**: if "Always Allow" doesn't stick (e.g., macOS resets the ACL after a Chromium update or a `partition_id` reset), open **CodexBar → Settings → Advanced → Keychain access** and enable **Disable Keychain access**. CodexBar will no longer touch the Keychain. Browser-cookie-based providers will be skipped, but Claude/Codex OAuth via the CLI still works (it reads `~/.codex` / `~/.claude` config files, not the Keychain).
-  - **Prompt after uninstall?** Deleting the app prevents a new launch from that bundle, but an already-running CodexBar process can keep requesting Keychain access until it quits. Check for that process, a Login Item, another installed copy, or a prompt that names a different requesting binary/path. See [Keychain prompt troubleshooting](docs/keychain-prompts.md) for safe checks and what to include in a support report without sharing secrets.
-- **Files & Folders prompts (folder/volume access)**: CodexBar launches provider CLIs and local probes for some providers. If those helpers read a project directory or external drive, macOS may ask CodexBar for that folder/volume (e.g., Desktop or an external volume). This is driven by the helper’s working directory, not background disk scanning.
+    - This removes the prompt when AIBar decrypts cookies for that browser.
+  - **Last resort — stop all Keychain reads entirely**: if "Always Allow" doesn't stick (e.g., macOS resets the ACL after a Chromium update or a `partition_id` reset), open **AIBar → Settings → Advanced → Keychain access** and enable **Disable Keychain access**. AIBar will no longer touch the Keychain. Browser-cookie-based providers will be skipped, but Claude/Codex OAuth via the CLI still works (it reads `~/.codex` / `~/.claude` config files, not the Keychain).
+  - **Prompt after uninstall?** Deleting the app prevents a new launch from that bundle, but an already-running AIBar process can keep requesting Keychain access until it quits. Check for that process, a Login Item, another installed copy, or a prompt that names a different requesting binary/path. See [Keychain prompt troubleshooting](docs/keychain-prompts.md) for safe checks and what to include in a support report without sharing secrets.
+- **Files & Folders prompts (folder/volume access)**: AIBar launches provider CLIs and local probes for some providers. If those helpers read a project directory or external drive, macOS may ask AIBar for that folder/volume (e.g., Desktop or an external volume). This is driven by the helper’s working directory, not background disk scanning.
 - **What we do not request in the background**: no Screen Recording or Accessibility permissions; user-triggered helper actions may ask macOS for Automation permission to open Terminal. No passwords are stored (browser cookies are reused when you opt in).
 
 ## Docs
@@ -252,3 +250,5 @@ Inspired by [ccusage](https://github.com/ryoppippi/ccusage) (MIT), specifically 
 
 ## License
 MIT • Peter Steinberger ([steipete](https://twitter.com/steipete))
+
+Forked from CodexBar.
