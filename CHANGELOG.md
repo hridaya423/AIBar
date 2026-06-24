@@ -3,6 +3,7 @@
 ## 0.37.1 — Unreleased
 
 ### Fixed
+- Menu: match the persistent Refresh row to native menu styling without replacing keyboard-navigable Settings, About, and Quit actions. Thanks @Zihao-Qi!
 - MiniMax: recover detailed token-plan windows from the remains API when the coding-plan page only exposes coarse usage. Thanks @Yuxin-Qiao!
 - Cost history: remove the redundant tooltip from submenu-backed Cost rows. Thanks @Zihao-Qi!
 - Menu refresh: keep the menu open and show in-place progress when Refresh is clicked. Thanks @elijahfriedman!
