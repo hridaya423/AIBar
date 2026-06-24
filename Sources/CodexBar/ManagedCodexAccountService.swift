@@ -70,7 +70,9 @@ struct ManagedCodexHomeFactory: ManagedCodexHomeProducing {
     }
 
     func makeHomeURL() -> URL {
-        self.root.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let homeURL = self.root.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        self.seedManagedCodexConfig(at: homeURL)
+        return homeURL
     }
 
     func validateManagedHomeForDeletion(_ url: URL) throws {
@@ -88,6 +90,26 @@ struct ManagedCodexHomeFactory: ManagedCodexHomeProducing {
         return base
             .appendingPathComponent("CodexBar", isDirectory: true)
             .appendingPathComponent("managed-codex-homes", isDirectory: true)
+    }
+
+    private func seedManagedCodexConfig(at homeURL: URL) {
+        let configURL = homeURL.appendingPathComponent("config.toml")
+        guard !FileManager.default.fileExists(atPath: configURL.path) else { return }
+
+        let contents = """
+        [analytics]
+        enabled = false
+
+        [feedback]
+        enabled = false
+        """
+        do {
+            try FileManager.default.createDirectory(at: homeURL, withIntermediateDirectories: true)
+            try contents.write(to: configURL, atomically: true, encoding: .utf8)
+        } catch {
+            CodexBarLog.logger(LogCategories.configStore).warning(
+                "Failed to seed managed Codex config: \(error.localizedDescription)")
+        }
     }
 }
 

@@ -63,14 +63,14 @@ public enum BrowserCookieAccessGate {
         }
         guard shouldCheckKeychain else { return false }
 
-        let requiresInteraction = self.chromiumKeychainRequiresInteraction()
+        let requiresSuppression = self.chromiumKeychainRequiresSuppression()
         return self.lock.withLock { state in
             self.loadIfNeeded(&state)
-            if requiresInteraction {
+            if requiresSuppression {
                 state.deniedUntilByBrowser[browser.rawValue] = now.addingTimeInterval(self.cooldownInterval)
                 self.persist(state)
                 self.log.info(
-                    "Cookie access requires keychain interaction; suppressing",
+                    "Cookie access keychain preflight failed; suppressing",
                     metadata: ["browser": browser.displayName])
                 return false
             }
@@ -110,14 +110,14 @@ public enum BrowserCookieAccessGate {
         }
     }
 
-    private static func chromiumKeychainRequiresInteraction() -> Bool {
+    private static func chromiumKeychainRequiresSuppression() -> Bool {
         for label in self.safeStorageLabels {
             switch KeychainAccessPreflight.checkGenericPassword(service: label.service, account: label.account) {
             case .allowed:
                 return false
-            case .interactionRequired:
+            case .interactionRequired, .failure:
                 return true
-            case .notFound, .failure:
+            case .notFound:
                 continue
             }
         }

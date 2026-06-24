@@ -4,6 +4,7 @@ import Testing
 @testable import CodexBarCore
 
 #if os(macOS)
+import Security
 import SweetCookieKit
 
 @Suite(.serialized)
@@ -253,6 +254,27 @@ struct BrowserDetectionTests {
                     #expect(BrowserCookieAccessGate.shouldAttempt(.chrome) == false)
                     #expect(BrowserCookieAccessGate.shouldAttempt(.safari) == true)
                 }
+            }
+        }
+
+        #expect(preflightCount == 1)
+    }
+
+    @Test
+    func `keychain preflight failure suppresses chromium cookie source during cooldown`() {
+        BrowserCookieAccessGate.resetForTesting()
+        defer { BrowserCookieAccessGate.resetForTesting() }
+
+        let start = Date(timeIntervalSince1970: 1000)
+        var preflightCount = 0
+
+        KeychainAccessGate.withTaskOverrideForTesting(false) {
+            KeychainAccessPreflight.withCheckGenericPasswordOverrideForTesting { _, _ in
+                preflightCount += 1
+                return .failure(Int(errSecAuthFailed))
+            } operation: {
+                #expect(BrowserCookieAccessGate.shouldAttempt(.chrome, now: start) == false)
+                #expect(BrowserCookieAccessGate.shouldAttempt(.chrome, now: start.addingTimeInterval(60)) == false)
             }
         }
 

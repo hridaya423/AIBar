@@ -35,6 +35,18 @@ struct ManagedCodexAccountServiceTests {
     }
 
     @Test
+    func `managed codex homes disable analytics and feedback`() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let homeURL = ManagedCodexHomeFactory(root: root).makeHomeURL()
+        let config = try String(contentsOf: homeURL.appendingPathComponent("config.toml"), encoding: .utf8)
+
+        #expect(config.contains("[analytics]\nenabled = false"))
+        #expect(config.contains("[feedback]\nenabled = false"))
+    }
+
+    @Test
     func `new authentication appends managed account without implicit selection side effect`() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         defer { try? FileManager.default.removeItem(at: root) }
