@@ -395,6 +395,7 @@ extension StatusItemController {
         context: MenuRebuildContext)
     {
         self.performMenuMutationWithoutAnimation {
+            defer { self.flushHostedMenuRowRendering(in: menu) }
             let displacedSelection = self.lastMergedMenuContentSelection
             self.lastMergedMenuContentSelection = nil
             self.harvestRecyclableMenuCardViews(in: menu, fromIndex: 0, displacedSelection: displacedSelection)

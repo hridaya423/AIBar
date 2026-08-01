@@ -21,6 +21,7 @@ extension StatusItemController {
         context: MenuUpdateContext)
     {
         self.performMenuMutationWithoutAnimation {
+            defer { self.flushHostedMenuRowRendering(in: menu) }
             let contentStartIndex = self.providerSwitcherContentStartIndex(in: menu)
             if let switcherView = menu.items.first?.view as? ProviderSwitcherView {
                 switcherView.updateSelection(context.switcherSelection)
