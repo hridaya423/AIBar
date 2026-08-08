@@ -692,7 +692,10 @@
 "Updated %@m ago" = "%@ 分钟前更新";
 "Updated just now" = "刚刚更新";
 "Projected empty in %@" = "预计 %@ 后耗尽";
+"Projected empty tomorrow" = "预计明天耗尽";
 "Runs out in %@" = "预计 %@ 后耗尽";
+"Runs out tomorrow" = "预计明天耗尽";
+"Used so far %d%%" = "目前已使用 %d%%";
 "Pace: %@" = "节奏：%@";
 "Pace: %@ · %@" = "节奏：%@ · %@";
 "%@ · %@" = "%@ · %@";

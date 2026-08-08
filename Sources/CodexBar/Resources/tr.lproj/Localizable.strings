@@ -1117,3 +1117,6 @@
 "Codex reset used" = "Codex sıfırlaması kullanıldı";
 "%d window reset." = "%d pencere sıfırlandı.";
 "Codex reset failed" = "Codex sıfırlaması başarısız";
+"Projected empty tomorrow" = "Projected empty tomorrow";
+"Runs out tomorrow" = "Runs out tomorrow";
+"Used so far %d%%" = "Used so far %d%%";

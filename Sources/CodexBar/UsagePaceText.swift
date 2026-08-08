@@ -47,11 +47,15 @@ enum UsagePaceText {
         if pace.willLastToReset {
             etaLabel = L("Lasts until reset")
         } else if let etaSeconds = pace.etaSeconds {
-            let etaText = Self.durationText(seconds: etaSeconds, now: now)
-            if context == .session {
-                etaLabel = etaText == "now" ? L("Projected empty now") : L("Projected empty in %@", etaText)
+            if self.isTomorrow(etaSeconds: etaSeconds, now: now) {
+                etaLabel = context == .session ? L("Projected empty tomorrow") : L("Runs out tomorrow")
             } else {
-                etaLabel = etaText == "now" ? L("Runs out now") : L("Runs out in %@", etaText)
+                let etaText = Self.durationText(seconds: etaSeconds, now: now)
+                if context == .session {
+                    etaLabel = etaText == "now" ? L("Projected empty now") : L("Projected empty in %@", etaText)
+                } else {
+                    etaLabel = etaText == "now" ? L("Runs out now") : L("Runs out in %@", etaText)
+                }
             }
         } else {
             etaLabel = nil
@@ -59,8 +63,11 @@ enum UsagePaceText {
 
         guard let runOutProbability = pace.runOutProbability else { return etaLabel }
         let roundedRisk = self.roundedRiskPercent(runOutProbability)
+        // A rounded 0% risk does not add information and makes the reassuring outcome read as
+        // contradictory ("Lasts until reset · ≈ 0% run-out risk"). Keep the pace line focused.
+        guard roundedRisk > 0 else { return etaLabel }
         let riskLabel = L("≈ %d%% run-out risk", roundedRisk)
-        if pace.willLastToReset, roundedRisk > 0 {
+        if pace.willLastToReset {
             return riskLabel
         }
         if let etaLabel {
@@ -75,6 +82,13 @@ enum UsagePaceText {
         if countdown == "now" { return "now" }
         if countdown.hasPrefix("in ") { return String(countdown.dropFirst(3)) }
         return countdown
+    }
+
+    private static func isTomorrow(etaSeconds: TimeInterval, now: Date) -> Bool {
+        guard etaSeconds > 0,
+              let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now)
+        else { return false }
+        return Calendar.current.isDate(now.addingTimeInterval(etaSeconds), inSameDayAs: tomorrow)
     }
 
     private static func roundedRiskPercent(_ probability: Double) -> Int {

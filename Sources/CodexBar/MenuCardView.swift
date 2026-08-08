@@ -44,6 +44,7 @@ struct UsageMenuCardView: View {
             let detailLeftText: String?
             let detailRightText: String?
             let pacePercent: Double?
+            let paceUsagePercent: Double?
             let paceOnTop: Bool
             let warningMarkerPercents: [Double]
             let cardStyle: Bool
@@ -59,6 +60,7 @@ struct UsageMenuCardView: View {
                 detailLeftText: String?,
                 detailRightText: String?,
                 pacePercent: Double?,
+                paceUsagePercent: Double? = nil,
                 paceOnTop: Bool,
                 warningMarkerPercents: [Double] = [],
                 cardStyle: Bool = false)
@@ -73,6 +75,7 @@ struct UsageMenuCardView: View {
                 self.detailLeftText = detailLeftText
                 self.detailRightText = detailRightText
                 self.pacePercent = pacePercent
+                self.paceUsagePercent = paceUsagePercent
                 self.paceOnTop = paceOnTop
                 self.warningMarkerPercents = warningMarkerPercents
                 self.cardStyle = cardStyle
@@ -450,6 +453,7 @@ private struct MetricRow: View {
                     percent: self.metric.percent,
                     tint: self.progressColor,
                     accessibilityLabel: self.metric.percentStyle.accessibilityLabel,
+                    accessibilityValue: self.metric.accessibilityValue,
                     pacePercent: self.metric.pacePercent,
                     paceOnTop: self.metric.paceOnTop,
                     warningMarkerPercents: self.metric.warningMarkerPercents)
@@ -466,6 +470,21 @@ private struct MetricRow: View {
                                 .lineLimit(1)
                         }
                     }
+                    if let usedPercent = self.metric.paceUsagePercent {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(String(format: L("Used so far %d%%"), Int(usedPercent.rounded())))
+                                .font(.footnote.weight(.medium))
+                                .foregroundStyle(MenuHighlightStyle.primary(self.isHighlighted))
+                                .lineLimit(1)
+                            Spacer()
+                            if let forecast = self.metric.detailRightText {
+                                Text(forecast)
+                                    .font(.footnote)
+                                    .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
                     if self.metric.detailLeftText != nil || self.metric.detailRightText != nil {
                         HStack(alignment: .firstTextBaseline) {
                             if let detailLeft = self.metric.detailLeftText {
@@ -475,7 +494,9 @@ private struct MetricRow: View {
                                     .lineLimit(1)
                             }
                             Spacer()
-                            if let detailRight = self.metric.detailRightText {
+                            if let detailRight = self.metric.paceUsagePercent == nil ? self.metric
+                                .detailRightText : nil
+                            {
                                 Text(detailRight)
                                     .font(.footnote)
                                     .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
@@ -1244,6 +1265,7 @@ extension UsageMenuCardView.Model {
                 detailLeftText: tertiaryPaceDetail?.leftLabel,
                 detailRightText: tertiaryPaceDetail?.rightLabel,
                 pacePercent: tertiaryPaceDetail?.pacePercent,
+                paceUsagePercent: tertiaryPaceDetail?.usedPercent,
                 paceOnTop: tertiaryPaceDetail?.paceOnTop ?? true,
                 warningMarkerPercents: Self.warningMarkerPercents(
                     thresholds: input.quotaWarningThresholds[.weekly],
@@ -1349,6 +1371,7 @@ extension UsageMenuCardView.Model {
         }
         // Abacus: show credits as detail, compute pace on the primary monthly window
         var primaryPacePercent: Double?
+        var primaryPaceUsagePercent: Double?
         var primaryPaceOnTop = true
         if let paceDetail = Self.sessionPaceDetail(
             provider: input.provider,
@@ -1359,6 +1382,7 @@ extension UsageMenuCardView.Model {
             primaryDetailLeft = paceDetail.leftLabel
             primaryDetailRight = paceDetail.rightLabel
             primaryPacePercent = paceDetail.pacePercent
+            primaryPaceUsagePercent = paceDetail.usedPercent
             primaryPaceOnTop = paceDetail.paceOnTop
         }
         if input.provider == .abacus {
@@ -1380,6 +1404,7 @@ extension UsageMenuCardView.Model {
                     primaryDetailLeft = paceDetail.leftLabel
                     primaryDetailRight = paceDetail.rightLabel
                     primaryPacePercent = paceDetail.pacePercent
+                    primaryPaceUsagePercent = paceDetail.usedPercent
                     primaryPaceOnTop = paceDetail.paceOnTop
                 }
             }
@@ -1388,6 +1413,7 @@ extension UsageMenuCardView.Model {
             primaryDetailLeft = paceDetail.leftLabel
             primaryDetailRight = paceDetail.rightLabel
             primaryPacePercent = paceDetail.pacePercent
+            primaryPaceUsagePercent = paceDetail.usedPercent
             primaryPaceOnTop = paceDetail.paceOnTop
         }
         // Legacy request-based Cursor plans: surface the raw used/limit quota on its own line,
@@ -1408,6 +1434,7 @@ extension UsageMenuCardView.Model {
             primaryDetailLeft = regen.pace.leftLabel
             primaryDetailRight = regen.pace.rightLabel
             primaryPacePercent = regen.pace.pacePercent
+            primaryPaceUsagePercent = regen.pace.usedPercent
             primaryPaceOnTop = regen.pace.paceOnTop
         }
         let primaryStatusText = input.provider == .deepseek ? primaryDetailText : nil
@@ -1426,6 +1453,7 @@ extension UsageMenuCardView.Model {
             detailLeftText: primaryDetailLeft,
             detailRightText: primaryDetailRight,
             pacePercent: primaryPacePercent,
+            paceUsagePercent: primaryPaceUsagePercent,
             paceOnTop: primaryPaceOnTop,
             warningMarkerPercents: Self.warningMarkerPercents(
                 thresholds: input.quotaWarningThresholds[.session],
@@ -1473,6 +1501,7 @@ extension UsageMenuCardView.Model {
                 leftLabel: String(format: L("%@ of %@ bonus credits left"), remainingText, totalText),
                 rightLabel: nil,
                 pacePercent: nil,
+                usedPercent: nil,
                 paceOnTop: true)
         }
         if input.provider == .alibaba || input.provider == .alibabatokenplan,
@@ -1497,7 +1526,12 @@ extension UsageMenuCardView.Model {
            let detail = weekly.resetDescription?.trimmingCharacters(in: .whitespacesAndNewlines),
            !detail.isEmpty
         {
-            paceDetail = PaceDetail(leftLabel: detail, rightLabel: nil, pacePercent: nil, paceOnTop: true)
+            paceDetail = PaceDetail(
+                leftLabel: detail,
+                rightLabel: nil,
+                pacePercent: nil,
+                usedPercent: nil,
+                paceOnTop: true)
         }
         if let cursorPaceDetail = Self.cursorBillingCyclePaceDetail(
             window: weekly,
@@ -1534,6 +1568,7 @@ extension UsageMenuCardView.Model {
             detailLeftText: paceDetail?.leftLabel,
             detailRightText: paceDetail?.rightLabel,
             pacePercent: paceDetail?.pacePercent,
+            paceUsagePercent: paceDetail?.usedPercent,
             paceOnTop: paceDetail?.paceOnTop ?? true,
             warningMarkerPercents: Self.weeklyMarkerPercents(input: input, windowMinutes: weekly.windowMinutes))
     }
@@ -1584,6 +1619,7 @@ extension UsageMenuCardView.Model {
                 detailLeftText: sessionResetPrompt ?? paceDetail?.leftLabel,
                 detailRightText: sessionResetPrompt == nil ? paceDetail?.rightLabel : nil,
                 pacePercent: paceDetail?.pacePercent,
+                paceUsagePercent: sessionResetPrompt == nil ? paceDetail?.usedPercent : nil,
                 paceOnTop: paceDetail?.paceOnTop ?? true,
                 warningMarkerPercents: Self.codexLaneMarkerPercents(
                     input: input,

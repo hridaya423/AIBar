@@ -116,7 +116,7 @@ struct ProviderInlineDashboardModelTests {
         #expect(model.inlineUsageDashboard?.points.first?.accessibilityValue == "2023-11-14: $1.25")
         #expect(model.inlineUsageDashboard?.detailLines
             .contains { $0.hasPrefix("30d:") && $0.contains("tokens") } == true)
-        #expect(model.inlineUsageDashboard?.detailLines.contains("Top model: claude-sonnet-4-20250514") == true)
+        #expect(model.inlineUsageDashboard?.detailLines.last?.contains("claude-sonnet-4 · 1.9K tokens (100%)") == true)
         #expect(model.planText == "Admin API")
     }
 

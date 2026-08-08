@@ -108,7 +108,11 @@ extension UsageMenuCardView.Model {
             thirtyDayNote,
         ]
         if let topModel = usage.topModels.first {
-            notes.append("\(L("Top model")): \(topModel.name)")
+            notes.append(
+                "\(L("Top model")): " + Self.modelTokenSummary(
+                    name: topModel.name,
+                    tokens: topModel.totalTokens,
+                    totalTokens: thirty.totalTokens))
         }
         return notes
     }
@@ -321,7 +325,20 @@ extension UsageMenuCardView.Model {
         let latest = snapshot.daily.max { lhs, rhs in lhs.date < rhs.date }
         var details: [String] = []
         if let topModel = Self.topCostModel(from: snapshot.daily) {
-            details.append("\(L("Top model")): \(Self.shortModelName(topModel))")
+            var summary = Self.shortModelName(topModel.name)
+            if topModel.cost > 0 {
+                summary += " · \(Self.costString(topModel.cost, currencyCode: snapshot.currencyCode))"
+                if topModel.totalCost > 0 {
+                    let share = Int(((topModel.cost / topModel.totalCost) * 100).rounded())
+                    summary += " (\(share)%)"
+                }
+            } else if topModel.tokens > 0 {
+                summary = Self.modelTokenSummary(
+                    name: topModel.name,
+                    tokens: topModel.tokens,
+                    totalTokens: topModel.totalTokens)
+            }
+            details.append("\(L("Top model")): \(summary)")
         }
         if let requestCount = snapshot.last30DaysRequests {
             details.append("\(requestHistoryTitle): \(UsageFormatter.tokenCountString(requestCount)) \(L("requests"))")
@@ -393,7 +410,11 @@ extension UsageMenuCardView.Model {
             "\(L("Cache read")): \(UsageFormatter.tokenCountString(last30.cacheReadInputTokens)) \(L("tokens"))",
         ]
         if let topModel = usage.topModels.first {
-            details.append("\(L("Top model")): \(Self.shortModelName(topModel.name))")
+            details.append(
+                "\(L("Top model")): " + Self.modelTokenSummary(
+                    name: topModel.name,
+                    tokens: topModel.totalTokens,
+                    totalTokens: last30.totalTokens))
         }
         return InlineUsageDashboardModel(
             accessibilityLabel: L("Claude Admin API 30 day spend trend"),
@@ -508,7 +529,11 @@ extension UsageMenuCardView.Model {
         }
         var details = [L("30d billing history from MiniMax web session")]
         if let topModel = billing.topModels.first {
-            details.append("\(L("Top model")): \(Self.shortModelName(topModel.name))")
+            details.append(
+                "\(L("Top model")): " + Self.modelTokenSummary(
+                    name: topModel.name,
+                    tokens: topModel.tokens,
+                    totalTokens: billing.last30DaysTokens))
         }
         if let topMethod = billing.topMethods.first {
             details.append("\(L("Top method")): \(Self.shortModelName(topMethod.name))")
@@ -654,7 +679,26 @@ extension UsageMenuCardView.Model {
         return String(trimmed.prefix(25)) + "…"
     }
 
-    private static func topCostModel(from entries: [CostUsageDailyReport.Entry]) -> String? {
+    private static func modelTokenSummary(name: String, tokens: Int, totalTokens: Int) -> String {
+        var summary = Self.shortModelName(name)
+        guard tokens > 0 else { return summary }
+
+        summary += " · \(UsageFormatter.tokenCountString(tokens)) \(L("tokens"))"
+        guard totalTokens > 0 else { return summary }
+
+        let share = Int((min(1, max(0, Double(tokens) / Double(totalTokens))) * 100).rounded())
+        return "\(summary) (\(share)%)"
+    }
+
+    private struct CostModelSummary {
+        let name: String
+        let cost: Double
+        let totalCost: Double
+        let tokens: Int
+        let totalTokens: Int
+    }
+
+    private static func topCostModel(from entries: [CostUsageDailyReport.Entry]) -> CostModelSummary? {
         var scores: [String: (cost: Double, tokens: Int)] = [:]
         for entry in entries {
             for model in entry.modelBreakdowns ?? [] {
@@ -664,10 +708,21 @@ extension UsageMenuCardView.Model {
                 scores[model.modelName] = score
             }
         }
-        return scores.max {
-            if $0.value.cost == $1.value.cost { return $0.value.tokens < $1.value.tokens }
-            return $0.value.cost < $1.value.cost
-        }?.key
+        let totalCost = scores.values.reduce(0) { $0 + $1.cost }
+        let totalTokens = scores.values.reduce(0) { $0 + $1.tokens }
+        guard let leader = scores.max(by: { lhs, rhs in
+            if lhs.value.cost != rhs.value.cost { return lhs.value.cost < rhs.value.cost }
+            if lhs.value.tokens != rhs.value.tokens { return lhs.value.tokens < rhs.value.tokens }
+            return lhs.key.localizedStandardCompare(rhs.key) == .orderedDescending
+        }) else {
+            return nil
+        }
+        return CostModelSummary(
+            name: leader.key,
+            cost: leader.value.cost,
+            totalCost: totalCost,
+            tokens: leader.value.tokens,
+            totalTokens: totalTokens)
     }
 }
 

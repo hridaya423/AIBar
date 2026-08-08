@@ -65,6 +65,7 @@ struct MenuCardModelCodexProjectionTests {
         let weekly = try #require(model.metrics.first { $0.id == "secondary" })
         #expect(weekly.detailLeftText == "10% in reserve")
         #expect(weekly.detailRightText == "Lasts until reset")
+        #expect(weekly.paceUsagePercent == 4)
     }
 
     @Test

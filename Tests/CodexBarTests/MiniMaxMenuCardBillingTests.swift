@@ -75,6 +75,7 @@ struct MiniMaxMenuCardBillingTests {
         #expect(model.inlineUsageDashboard?.accessibilityLabel == "MiniMax 30 day token usage trend")
         #expect(model.inlineUsageDashboard?.kpis.first?.value == "1.2K")
         #expect(model.inlineUsageDashboard?.points.count == 2)
+        #expect(model.inlineUsageDashboard?.detailLines.contains("Top model: MiniMax-M1 · 2.3K tokens (41%)") == true)
         #expect(model.usageNotes.contains("Last 30 days: 5.7K tokens"))
 
         let hiddenModel = UsageMenuCardView.Model.make(.init(

@@ -1125,3 +1125,6 @@
 "byte_unit_megabytes" = "مگابایت";
 "byte_unit_gigabyte" = "گیگابایت";
 "byte_unit_gigabytes" = "گیگابایت";
+"Projected empty tomorrow" = "Projected empty tomorrow";
+"Runs out tomorrow" = "Runs out tomorrow";
+"Used so far %d%%" = "Used so far %d%%";

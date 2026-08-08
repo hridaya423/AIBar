@@ -722,7 +722,10 @@
 "Updated %@m ago" = "Updated %@m ago";
 "Updated just now" = "Updated just now";
 "Projected empty in %@" = "Projected empty in %@";
+"Projected empty tomorrow" = "Projected empty tomorrow";
 "Runs out in %@" = "Runs out in %@";
+"Runs out tomorrow" = "Runs out tomorrow";
+"Used so far %d%%" = "Used so far %d%%";
 "Pace: %@" = "Pace: %@";
 "Pace: %@ · %@" = "Pace: %@ · %@";
 "%@ · %@" = "%@ · %@";

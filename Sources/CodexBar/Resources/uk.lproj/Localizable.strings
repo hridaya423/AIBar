@@ -1115,3 +1115,6 @@
 "byte_unit_megabytes" = "мегабайти";
 "byte_unit_gigabyte" = "гігабайт";
 "byte_unit_gigabytes" = "гігабайти";
+"Projected empty tomorrow" = "Projected empty tomorrow";
+"Runs out tomorrow" = "Runs out tomorrow";
+"Used so far %d%%" = "Used so far %d%%";

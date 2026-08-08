@@ -498,7 +498,7 @@ public struct GeminiStatusProbe: Sendable {
 
         // For fnm-managed installs, ask fnm where the package lives
         if Self.isLikelyFnmManagedPath(geminiPath) || Self.isLikelyFnmManagedPath(resolvedGeminiPath),
-           let fnmPath = TTYCommandRunner.which("fnm"),
+           let fnmPath = Self.resolveFnmBinary(environment: env),
            let packageRoot = Self.resolveGeminiPackageRootViaFnm(fnmPath: fnmPath, environment: env),
            let credentials = Self.extractOAuthCredentials(fromGeminiPackageRoot: packageRoot)
         {
@@ -519,6 +519,22 @@ public struct GeminiStatusProbe: Sendable {
         let normalized = path.replacingOccurrences(of: "\\", with: "/")
         return normalized.contains("/fnm_multishells/")
             || (normalized.contains("/node-versions/") && normalized.contains("/fnm/"))
+    }
+
+    private static func resolveFnmBinary(environment: [String: String]) -> String? {
+        // Keep Gemini and fnm paired when the app's current environment deliberately selects
+        // a particular Node toolchain. The login-shell path is a useful fallback, but it can
+        // point at a different fnm installation and therefore the wrong Gemini package.
+        if let path = environment["PATH"] {
+            for directory in path.split(separator: ":") {
+                let candidate = "\(directory)/fnm"
+                if FileManager.default.isExecutableFile(atPath: candidate) {
+                    return candidate
+                }
+            }
+        }
+
+        return TTYCommandRunner.which("fnm")
     }
 
     private static func resolveGeminiPackageRootViaFnm(

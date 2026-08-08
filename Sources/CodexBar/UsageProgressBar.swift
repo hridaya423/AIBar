@@ -15,6 +15,7 @@ struct UsageProgressBar: View {
     let percent: Double
     let tint: Color
     let accessibilityLabel: String
+    let accessibilityValue: String?
     let pacePercent: Double?
     let paceOnTop: Bool
     let warningMarkerPercents: [Double]
@@ -25,6 +26,7 @@ struct UsageProgressBar: View {
         percent: Double,
         tint: Color,
         accessibilityLabel: String,
+        accessibilityValue: String? = nil,
         pacePercent: Double? = nil,
         paceOnTop: Bool = true,
         warningMarkerPercents: [Double] = [])
@@ -32,6 +34,7 @@ struct UsageProgressBar: View {
         self.percent = percent
         self.tint = tint
         self.accessibilityLabel = accessibilityLabel
+        self.accessibilityValue = accessibilityValue
         self.pacePercent = pacePercent
         self.paceOnTop = paceOnTop
         self.warningMarkerPercents = warningMarkerPercents
@@ -63,10 +66,11 @@ struct UsageProgressBar: View {
             let cornerSize = CGSize(width: cornerRadius, height: cornerRadius)
             let rect = CGRect(origin: .zero, size: size)
 
-            context.clip(to: Path(rect))
-
             // Track
             let trackPath = Path { p in p.addRoundedRect(in: rect, cornerSize: cornerSize) }
+            // Keep the marker inside the same pill silhouette as the track. At either endpoint,
+            // a rectangular clip lets its stripe square off the bar's otherwise rounded edge.
+            context.clip(to: trackPath)
             context.fill(trackPath, with: .color(MenuHighlightStyle.progressTrack(self.isHighlighted)))
 
             // Fill
@@ -119,7 +123,7 @@ struct UsageProgressBar: View {
         }
         .frame(height: 6)
         .accessibilityLabel(self.accessibilityLabel)
-        .accessibilityValue("\(Self.displayPercent(self.clamped)) percent")
+        .accessibilityValue(self.accessibilityValue ?? "\(Self.displayPercent(self.clamped)) percent")
     }
 
     /// Aligns edge rendering with the rounded percent label: sub-0.5% is empty and 99.5%+ is full.
@@ -205,5 +209,16 @@ struct UsageProgressBar: View {
     private nonisolated static func clampedPercent(_ value: Double?) -> Double {
         guard let value else { return 0 }
         return min(100, max(0, value))
+    }
+}
+
+extension UsageMenuCardView.Model.Metric {
+    /// Preserve the compact visual hierarchy while giving VoiceOver the pace conclusion that the
+    /// striped marker communicates visually.
+    var accessibilityValue: String {
+        [self.percentLabel, self.detailLeftText, self.detailRightText]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: ". ")
     }
 }

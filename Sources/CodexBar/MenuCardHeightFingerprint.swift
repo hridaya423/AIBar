@@ -86,6 +86,7 @@ extension UsageMenuCardView.Model.Metric {
             MenuCardHeightFingerprint.field("detailLeft", self.detailLeftText),
             MenuCardHeightFingerprint.field("detailRight", self.detailRightText),
             self.pacePercent == nil ? "pace=0" : "pace=1",
+            self.paceUsagePercent == nil ? "paceUsage=0" : "paceUsage=1",
             self.paceOnTop ? "paceTop=1" : "paceTop=0",
             self.cardStyle ? "card=1" : "card=0",
             "markers=\(self.warningMarkerPercents.count)",

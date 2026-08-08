@@ -6,6 +6,7 @@ extension UsageMenuCardView.Model {
         let leftLabel: String
         let rightLabel: String?
         let pacePercent: Double?
+        let usedPercent: Double?
         let paceOnTop: Bool
     }
 
@@ -43,6 +44,7 @@ extension UsageMenuCardView.Model {
                 detailLeftText: PersonalInfoRedactor.redactEmails(in: metric.detailLeftText, isEnabled: true),
                 detailRightText: PersonalInfoRedactor.redactEmails(in: metric.detailRightText, isEnabled: true),
                 pacePercent: metric.pacePercent,
+                paceUsagePercent: metric.paceUsagePercent,
                 paceOnTop: metric.paceOnTop,
                 warningMarkerPercents: metric.warningMarkerPercents,
                 cardStyle: metric.cardStyle)
@@ -128,6 +130,7 @@ extension UsageMenuCardView.Model {
             (current.detailText == nil) == (candidate.detailText == nil) &&
             (current.detailLeftText == nil) == (candidate.detailLeftText == nil) &&
             (current.detailRightText == nil) == (candidate.detailRightText == nil) &&
+            (current.paceUsagePercent == nil) == (candidate.paceUsagePercent == nil) &&
             current.cardStyle == candidate.cardStyle
     }
 
@@ -367,6 +370,7 @@ extension UsageMenuCardView.Model {
             leftLabel: detail.leftLabel,
             rightLabel: detail.rightLabel,
             pacePercent: pacePercent,
+            usedPercent: actualUsed,
             paceOnTop: paceOnTop)
     }
 
@@ -403,6 +407,7 @@ extension UsageMenuCardView.Model {
             leftLabel: detail.leftLabel,
             rightLabel: detail.rightLabel,
             pacePercent: pacePercent,
+            usedPercent: actualUsed,
             paceOnTop: paceOnTop)
     }
 
@@ -529,6 +534,7 @@ extension UsageMenuCardView.Model {
                 detailLeftText: usageKnown ? paceDetail?.leftLabel : nil,
                 detailRightText: usageKnown ? paceDetail?.rightLabel : nil,
                 pacePercent: usageKnown ? paceDetail?.pacePercent : nil,
+                paceUsagePercent: usageKnown ? paceDetail?.usedPercent : nil,
                 paceOnTop: paceDetail?.paceOnTop ?? true)
         }
     }
@@ -707,7 +713,14 @@ extension UsageMenuCardView.Model {
         } else {
             String(format: L("Full in ~%.0f regens"), ceil(ticksToFull))
         }
-        return (resetText, PaceDetail(leftLabel: left, rightLabel: right, pacePercent: nil, paceOnTop: true))
+        return (
+            resetText,
+            PaceDetail(
+                leftLabel: left,
+                rightLabel: right,
+                pacePercent: nil,
+                usedPercent: nil,
+                paceOnTop: true))
     }
 
     static func syntheticRollingRegenDetail(
@@ -738,6 +751,13 @@ extension UsageMenuCardView.Model {
             String(format: L("Full in ~%.0f regens"), ceil(ticksToFull))
         }
 
-        return (resetText, PaceDetail(leftLabel: left, rightLabel: right, pacePercent: nil, paceOnTop: true))
+        return (
+            resetText,
+            PaceDetail(
+                leftLabel: left,
+                rightLabel: right,
+                pacePercent: nil,
+                usedPercent: nil,
+                paceOnTop: true))
     }
 }

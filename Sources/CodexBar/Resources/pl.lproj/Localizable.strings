@@ -1119,3 +1119,6 @@
 "Codex reset used" = "Reset Codex użyty";
 "%d window reset." = "Zresetowano %d okno.";
 "Codex reset failed" = "Reset Codex nie powiódł się";
+"Projected empty tomorrow" = "Projected empty tomorrow";
+"Runs out tomorrow" = "Runs out tomorrow";
+"Used so far %d%%" = "Used so far %d%%";

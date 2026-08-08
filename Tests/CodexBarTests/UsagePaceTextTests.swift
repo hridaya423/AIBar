@@ -13,8 +13,10 @@ struct UsagePaceTextTests {
         "Lasts until reset",
         "Projected empty now",
         "Projected empty in %@",
+        "Projected empty tomorrow",
         "Runs out now",
         "Runs out in %@",
+        "Runs out tomorrow",
         "≈ %d%% run-out risk",
         "%@ · %@",
     ]
@@ -49,6 +51,40 @@ struct UsagePaceTextTests {
 
         #expect(detail.leftLabel == "33% in reserve")
         #expect(detail.rightLabel == "Lasts until reset")
+    }
+
+    @Test
+    func `weekly pace detail calls out a tomorrow forecast`() {
+        let now = Date(timeIntervalSince1970: 0)
+        let pace = UsagePace(
+            stage: .ahead,
+            deltaPercent: 8,
+            expectedUsedPercent: 42,
+            actualUsedPercent: 50,
+            etaSeconds: 24 * 3600,
+            willLastToReset: false,
+            runOutProbability: nil)
+
+        let detail = UsagePaceText.weeklyDetail(pace: pace, now: now)
+
+        #expect(detail.rightLabel == "Runs out tomorrow")
+    }
+
+    @Test
+    func `session pace detail calls out a tomorrow forecast`() {
+        let now = Date(timeIntervalSince1970: 0)
+        let pace = UsagePace(
+            stage: .ahead,
+            deltaPercent: 8,
+            expectedUsedPercent: 42,
+            actualUsedPercent: 50,
+            etaSeconds: 24 * 3600,
+            willLastToReset: false,
+            runOutProbability: nil)
+
+        let detail = UsagePaceText.sessionDetail(pace: pace, now: now)
+
+        #expect(detail.rightLabel == "Projected empty tomorrow")
     }
 
     @Test
@@ -119,7 +155,7 @@ struct UsagePaceTextTests {
     }
 
     @Test
-    func `weekly pace detail keeps lasts until reset only when rounded risk is zero`() {
+    func `weekly pace detail suppresses rounded zero risk`() {
         let now = Date(timeIntervalSince1970: 0)
         let pace = UsagePace(
             stage: .farBehind,
@@ -132,7 +168,7 @@ struct UsagePaceTextTests {
 
         let detail = UsagePaceText.weeklyDetail(pace: pace, now: now)
 
-        #expect(detail.rightLabel == "Lasts until reset · ≈ 0% run-out risk")
+        #expect(detail.rightLabel == "Lasts until reset")
     }
 
     @Test
