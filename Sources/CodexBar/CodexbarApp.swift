@@ -329,8 +329,9 @@ private func makeUpdaterController() -> UpdaterProviding {
 
     let defaults = UserDefaults.standard
     let autoUpdateKey = "autoUpdateEnabled"
-    // Default to true for first launch; fall back to saved preference thereafter.
-    let savedAutoUpdate = (defaults.object(forKey: autoUpdateKey) as? Bool) ?? true
+    // Respect the bundle's release policy on first launch; explicit preferences still win.
+    let bundleDefault = (Bundle.main.object(forInfoDictionaryKey: "SUEnableAutomaticChecks") as? Bool) ?? true
+    let savedAutoUpdate = (defaults.object(forKey: autoUpdateKey) as? Bool) ?? bundleDefault
     return SparkleUpdaterController(savedAutoUpdate: savedAutoUpdate)
 }
 #else

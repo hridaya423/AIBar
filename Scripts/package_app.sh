@@ -185,7 +185,7 @@ fi
 
 BUNDLE_ID="com.steipete.codexbar"
 FEED_URL="https://raw.githubusercontent.com/steipete/CodexBar/main/appcast.xml"
-AUTO_CHECKS=true
+AUTO_CHECKS=${CODEXBAR_AUTO_CHECKS:-true}
 if [[ "$LOWER_CONF" == "debug" ]]; then
   BUNDLE_ID="com.steipete.codexbar.debug"
   FEED_URL=""
