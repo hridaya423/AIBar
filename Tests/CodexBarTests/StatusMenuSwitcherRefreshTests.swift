@@ -186,9 +186,11 @@ struct StatusMenuSwitcherRefreshTests {
         let previousMenuCardRendering = StatusItemController.menuCardRenderingEnabled
         StatusItemController.menuCardRenderingEnabled = false
         StatusItemController.setMenuRefreshEnabledForTesting(true)
+        StatusItemController.setCodexAccountMenuProjectionRevalidationEnabledForTesting(false)
         defer {
             StatusItemController.menuCardRenderingEnabled = previousMenuCardRendering
             StatusItemController.resetMenuRefreshEnabledForTesting()
+            StatusItemController.resetCodexAccountMenuProjectionRevalidationEnabledForTesting()
         }
 
         let settings = Self.makeSettings()
@@ -198,6 +200,16 @@ struct StatusMenuSwitcherRefreshTests {
         settings.selectedMenuProvider = .codex
         Self.enableCodexAndClaude(settings)
         Self.disableOverview(settings)
+        settings._test_codexAccountSnapshotLoader = { _ in
+            CodexAccountReconciliationSnapshot(
+                storedAccounts: [],
+                activeStoredAccount: nil,
+                liveSystemAccount: nil,
+                matchingStoredAccountForLiveSystemAccount: nil,
+                activeSource: .liveSystem,
+                hasUnreadableAddedAccountStore: false)
+        }
+        defer { settings._test_codexAccountSnapshotLoader = nil }
 
         let fetcher = UsageFetcher()
         let store = UsageStore(fetcher: fetcher, browserDetection: BrowserDetection(cacheTTL: 0), settings: settings)

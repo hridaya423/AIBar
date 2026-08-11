@@ -1463,6 +1463,32 @@ extension StatusMenuTests {
         self.enableOnlyCodex(settings)
 
         let store = self.makeCodexStore(settings: settings, dashboardAuthorized: false)
+        let now = Date()
+        let components = Calendar.current.dateComponents([.year, .month, .day], from: now)
+        let dayKey = String(
+            format: "%04d-%02d-%02d",
+            components.year ?? 1970,
+            components.month ?? 1,
+            components.day ?? 1)
+        store._setSnapshotForTesting(self.makeCodexPlanUtilizationSnapshot(), provider: .codex)
+        store._setTokenSnapshotForTesting(
+            CostUsageTokenSnapshot(
+                sessionTokens: 123,
+                sessionCostUSD: 0.12,
+                last30DaysTokens: 123,
+                last30DaysCostUSD: 1.23,
+                daily: [
+                    CostUsageDailyReport.Entry(
+                        date: dayKey,
+                        inputTokens: nil,
+                        outputTokens: nil,
+                        totalTokens: 123,
+                        costUSD: 1.23,
+                        modelsUsed: nil,
+                        modelBreakdowns: nil),
+                ],
+                updatedAt: now),
+            provider: .codex)
         let controller = StatusItemController(
             store: store,
             settings: settings,

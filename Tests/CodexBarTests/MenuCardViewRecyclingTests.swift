@@ -208,15 +208,29 @@ extension StatusMenuTests {
     @Test
     func `merged data tick keeps row count and card views stable`() {
         StatusItemController.setMenuRefreshEnabledForTesting(false)
+        StatusItemController.setCodexAccountMenuProjectionRevalidationEnabledForTesting(false)
         let previousRendering = StatusItemController.menuCardRenderingEnabled
         StatusItemController.menuCardRenderingEnabled = true
-        defer { StatusItemController.menuCardRenderingEnabled = previousRendering }
+        defer {
+            StatusItemController.menuCardRenderingEnabled = previousRendering
+            StatusItemController.resetCodexAccountMenuProjectionRevalidationEnabledForTesting()
+        }
 
         let settings = self.makeSettings()
         settings.statusChecksEnabled = false
         settings.refreshFrequency = .manual
         settings.mergeIcons = true
         settings.mergedMenuLastSelectedWasOverview = false
+        settings._test_codexAccountSnapshotLoader = { _ in
+            CodexAccountReconciliationSnapshot(
+                storedAccounts: [],
+                activeStoredAccount: nil,
+                liveSystemAccount: nil,
+                matchingStoredAccountForLiveSystemAccount: nil,
+                activeSource: .liveSystem,
+                hasUnreadableAddedAccountStore: false)
+        }
+        defer { settings._test_codexAccountSnapshotLoader = nil }
         let registry = ProviderRegistry.shared
         let enabled: Set<UsageProvider> = [.codex, .claude]
         for provider in UsageProvider.allCases {
