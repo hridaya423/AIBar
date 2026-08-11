@@ -216,7 +216,13 @@ extension UsageMenuCardView.Model.Metric {
     /// Preserve the compact visual hierarchy while giving VoiceOver the pace conclusion that the
     /// striped marker communicates visually.
     var accessibilityValue: String {
-        [self.percentLabel, self.detailLeftText, self.detailRightText]
+        let paceUsage = self.paceUsagePercent.map {
+            String(format: L("Used so far %d%%"), Int($0.rounded()))
+        }
+        let expectedPace = self.paceExpectedUsedPercent.map {
+            String(format: L("Pace: %@"), "\(Int($0.rounded()))%")
+        }
+        return [self.percentLabel, self.resetText, paceUsage, expectedPace, self.detailLeftText, self.detailRightText]
             .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
             .joined(separator: ". ")

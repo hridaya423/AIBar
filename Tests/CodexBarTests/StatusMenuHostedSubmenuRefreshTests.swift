@@ -188,8 +188,8 @@ struct StatusMenuHostedSubmenuRefreshTests {
             seed: Self.seedOpenAICostSnapshot)
         try self.assertHostedSubmenuPreservesIdentity(
             chartID: StatusItemController.usageHistoryChartID,
-            provider: .claude,
-            seed: Self.seedPlanUtilizationHistory)
+            provider: .codex,
+            seed: Self.seedCodexSubscriptionUtilization)
         try self.assertHostedSubmenuPreservesIdentity(
             chartID: StatusItemController.storageBreakdownID,
             provider: .claude,
@@ -211,10 +211,10 @@ struct StatusMenuHostedSubmenuRefreshTests {
         }
         try self.assertHostedChartItemHeightMatchesRefresh(
             chartID: StatusItemController.usageHistoryChartID,
-            provider: .claude,
-            seed: Self.seedPlanUtilizationHistory)
+            provider: .codex,
+            seed: Self.seedCodexSubscriptionUtilization)
         { controller, submenu, width in
-            controller.appendUsageHistoryChartItem(to: submenu, provider: .claude, width: width)
+            controller.appendUsageHistoryChartItem(to: submenu, provider: .codex, width: width)
         }
         try self.assertHostedChartItemHeightMatchesRefresh(
             chartID: StatusItemController.storageBreakdownID,
@@ -249,7 +249,7 @@ struct StatusMenuHostedSubmenuRefreshTests {
     }
 
     @Test
-    func `utilization chart invalidates when active account changes`() throws {
+    func `subscription utilization summary invalidates when estimate changes`() throws {
         let previousMenuCardRendering = StatusItemController.menuCardRenderingEnabled
         StatusItemController.menuCardRenderingEnabled = true
         defer { StatusItemController.menuCardRenderingEnabled = previousMenuCardRendering }
@@ -257,25 +257,12 @@ struct StatusMenuHostedSubmenuRefreshTests {
         let settings = Self.makeSettings()
         settings.statusChecksEnabled = false
         settings.refreshFrequency = .manual
-        Self.enableOnlyClaude(settings)
-        settings.addTokenAccount(provider: .claude, label: "Alice", token: "alice-token")
-        settings.addTokenAccount(provider: .claude, label: "Bob", token: "bob-token")
-        let accounts = settings.tokenAccounts(for: .claude)
-        let alice = try #require(accounts.first)
-        let bob = try #require(accounts.last)
-        let aliceKey = try #require(
-            UsageStore._planUtilizationTokenAccountKeyForTesting(provider: .claude, account: alice))
-        let bobKey = try #require(
-            UsageStore._planUtilizationTokenAccountKeyForTesting(provider: .claude, account: bob))
+        settings.costUsageEnabled = true
+        Self.enableOnly(settings, provider: .codex)
 
         let fetcher = UsageFetcher()
         let store = UsageStore(fetcher: fetcher, browserDetection: BrowserDetection(cacheTTL: 0), settings: settings)
-        Self.seedClaudeSnapshots(in: store)
-        store.planUtilizationHistory[.claude] = PlanUtilizationHistoryBuckets(accounts: [
-            aliceKey: [Self.makePlanHistory(usedPercent: 20)],
-            bobKey: [Self.makePlanHistory(usedPercent: 50)],
-        ])
-        settings.setActiveTokenAccountIndex(0, for: .claude)
+        Self.seedCodexSubscriptionUtilization(in: store)
 
         let controller = StatusItemController(
             store: store,
@@ -288,16 +275,18 @@ struct StatusMenuHostedSubmenuRefreshTests {
 
         let submenu = controller.makeHostedSubviewPlaceholderMenu(
             chartID: StatusItemController.usageHistoryChartID,
-            provider: .claude,
+            provider: .codex,
             width: StatusItemController.menuCardBaseWidth)
         controller.menuWillOpen(submenu)
-        let aliceView = try #require(submenu.items.first?.view)
+        let initialView = try #require(submenu.items.first?.view)
 
-        settings.setActiveTokenAccountIndex(1, for: .claude)
+        store._setTokenSnapshotForTesting(
+            Self.makeTokenSnapshot(dailyCost: 2.34, date: Self.currentDayKey()),
+            provider: .codex)
         controller.refreshHostedSubviewMenu(submenu)
 
-        let bobView = try #require(submenu.items.first?.view)
-        #expect(bobView !== aliceView)
+        let refreshedView = try #require(submenu.items.first?.view)
+        #expect(refreshedView !== initialView)
     }
 
     private func assertHostedChartItemHeightMatchesRefresh(
@@ -491,24 +480,29 @@ struct StatusMenuHostedSubmenuRefreshTests {
         store._setSnapshotForTesting(snapshot, provider: .openai)
     }
 
-    private static func seedPlanUtilizationHistory(in store: UsageStore) {
-        self.seedClaudeSnapshots(in: store)
-        store.planUtilizationHistory[.claude] = PlanUtilizationHistoryBuckets(
-            unscoped: [
-                self.makePlanHistory(usedPercent: 24),
-            ])
-    }
-
-    private static func makePlanHistory(usedPercent: Double) -> PlanUtilizationSeriesHistory {
-        PlanUtilizationSeriesHistory(
-            name: .session,
-            windowMinutes: 300,
-            entries: [
-                PlanUtilizationHistoryEntry(
-                    capturedAt: Date(timeIntervalSince1970: 1_700_000_000),
-                    usedPercent: usedPercent,
-                    resetsAt: Date(timeIntervalSince1970: 1_700_018_000)),
-            ])
+    private static func seedCodexSubscriptionUtilization(in store: UsageStore) {
+        let now = Date()
+        let snapshot = UsageSnapshot(
+            primary: RateWindow(
+                usedPercent: 35,
+                windowMinutes: 300,
+                resetsAt: now.addingTimeInterval(1800),
+                resetDescription: nil),
+            secondary: RateWindow(
+                usedPercent: 42,
+                windowMinutes: 10080,
+                resetsAt: now.addingTimeInterval(86400),
+                resetDescription: nil),
+            updatedAt: now,
+            identity: ProviderIdentitySnapshot(
+                providerID: .codex,
+                accountEmail: "codex@example.com",
+                accountOrganization: nil,
+                loginMethod: "Plus Plan"))
+        store._setSnapshotForTesting(snapshot, provider: .codex)
+        store._setTokenSnapshotForTesting(
+            self.makeTokenSnapshot(date: self.currentDayKey(now)),
+            provider: .codex)
     }
 
     private static func seedStorageFootprint(in store: UsageStore) {
@@ -548,7 +542,19 @@ struct StatusMenuHostedSubmenuRefreshTests {
         store._setSnapshotForTesting(snapshot, provider: .zai)
     }
 
-    private static func makeTokenSnapshot(dailyCost: Double = 1.23) -> CostUsageTokenSnapshot {
+    private static func currentDayKey(_ date: Date = Date()) -> String {
+        let components = Calendar.current.dateComponents([.year, .month, .day], from: date)
+        return String(
+            format: "%04d-%02d-%02d",
+            components.year ?? 1970,
+            components.month ?? 1,
+            components.day ?? 1)
+    }
+
+    private static func makeTokenSnapshot(
+        dailyCost: Double = 1.23,
+        date: String = "2025-12-23") -> CostUsageTokenSnapshot
+    {
         CostUsageTokenSnapshot(
             sessionTokens: 123,
             sessionCostUSD: 0.12,
@@ -556,7 +562,7 @@ struct StatusMenuHostedSubmenuRefreshTests {
             last30DaysCostUSD: dailyCost,
             daily: [
                 CostUsageDailyReport.Entry(
-                    date: "2025-12-23",
+                    date: date,
                     inputTokens: nil,
                     outputTokens: nil,
                     totalTokens: 123,

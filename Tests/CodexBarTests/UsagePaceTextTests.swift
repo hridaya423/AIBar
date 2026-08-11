@@ -228,6 +228,55 @@ struct UsagePaceTextTests {
     }
 
     @Test
+    func `session pace remains visible at the beginning of a window`() throws {
+        let now = Date(timeIntervalSince1970: 0)
+        let window = RateWindow(
+            usedPercent: 1,
+            windowMinutes: 300,
+            resetsAt: now.addingTimeInterval(299 * 60),
+            resetDescription: nil)
+
+        let detail = try #require(UsagePaceText.sessionDetail(provider: .codex, window: window, now: now))
+
+        #expect(detail.expectedUsedPercent < 3)
+        #expect(detail.rightLabel != nil)
+    }
+
+    @Test
+    func `session pace calls out an exhausted window`() throws {
+        let now = Date(timeIntervalSince1970: 0)
+        let window = RateWindow(
+            usedPercent: 100,
+            windowMinutes: 300,
+            resetsAt: now.addingTimeInterval(2 * 3600),
+            resetDescription: nil)
+
+        let detail = try #require(UsagePaceText.sessionDetail(provider: .codex, window: window, now: now))
+
+        #expect(detail.rightLabel == "Projected empty now")
+    }
+
+    @Test
+    func `metric accessibility describes reset actual expected and forecast`() {
+        let metric = UsageMenuCardView.Model.Metric(
+            id: "weekly",
+            title: "Weekly",
+            percent: 50,
+            percentStyle: .used,
+            resetText: "Resets in 3d",
+            detailText: nil,
+            detailLeftText: "8% in deficit",
+            detailRightText: "Runs out tomorrow",
+            pacePercent: 42,
+            paceUsagePercent: 50,
+            paceExpectedUsedPercent: 42,
+            paceOnTop: false)
+
+        #expect(metric.accessibilityValue ==
+            "50% used. Resets in 3d. Used so far 50%. Pace: 42%. 8% in deficit. Runs out tomorrow")
+    }
+
+    @Test
     func `session pace summary formats single line text`() {
         let now = Date(timeIntervalSince1970: 0)
         let window = RateWindow(

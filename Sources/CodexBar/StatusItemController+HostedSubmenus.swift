@@ -241,15 +241,13 @@ extension StatusItemController {
     }
 
     private func usageHistoryRenderSignature(for provider: UsageProvider) -> String {
-        let snapshot = self.store.snapshot(for: provider)
-        let selection = self.store.planUtilizationHistorySelection(for: provider)
+        guard let estimate = self.store.subscriptionUtilizationEstimate(for: provider) else { return "none" }
         return [
-            "\(self.store.planUtilizationHistoryRevision)",
-            "\(Int(Date().timeIntervalSince1970 / 60))",
-            selection.accountKey ?? "unscoped",
-            snapshot?.primary == nil ? "0" : "1",
-            snapshot?.secondary == nil ? "0" : "1",
-            snapshot?.tertiary == nil ? "0" : "1",
+            String(estimate.monthlyMaxUSD.bitPattern, radix: 16),
+            String(estimate.monthlyUsedUSD.bitPattern, radix: 16),
+            String(estimate.utilizationPercent.bitPattern, radix: 16),
+            estimate.currencyCode,
+            estimate.isProjected ? "1" : "0",
         ].joined(separator: "|")
     }
 

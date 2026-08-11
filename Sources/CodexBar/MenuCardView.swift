@@ -47,6 +47,7 @@ struct UsageMenuCardView: View {
             let detailRightText: String?
             let pacePercent: Double?
             let paceUsagePercent: Double?
+            let paceExpectedUsedPercent: Double?
             let paceOnTop: Bool
             let warningMarkerPercents: [Double]
             let cardStyle: Bool
@@ -63,6 +64,7 @@ struct UsageMenuCardView: View {
                 detailRightText: String?,
                 pacePercent: Double?,
                 paceUsagePercent: Double? = nil,
+                paceExpectedUsedPercent: Double? = nil,
                 paceOnTop: Bool,
                 warningMarkerPercents: [Double] = [],
                 cardStyle: Bool = false)
@@ -78,6 +80,7 @@ struct UsageMenuCardView: View {
                 self.detailRightText = detailRightText
                 self.pacePercent = pacePercent
                 self.paceUsagePercent = paceUsagePercent
+                self.paceExpectedUsedPercent = paceExpectedUsedPercent
                 self.paceOnTop = paceOnTop
                 self.warningMarkerPercents = warningMarkerPercents
                 self.cardStyle = cardStyle
@@ -474,7 +477,7 @@ private struct MetricRow: View {
                     }
                     if let usedPercent = self.metric.paceUsagePercent {
                         HStack(alignment: .firstTextBaseline) {
-                            Text(String(format: L("Used so far %d%%"), Int(usedPercent.rounded())))
+                            Text(self.paceComparisonText(usedPercent: usedPercent))
                                 .font(.footnote.weight(.medium))
                                 .foregroundStyle(MenuHighlightStyle.primary(self.isHighlighted))
                                 .lineLimit(1)
@@ -520,6 +523,13 @@ private struct MetricRow: View {
         .padding(self.metric.cardStyle ? 10 : 0)
         .background(self.metric.cardStyle ? Color.secondary.opacity(self.isHighlighted ? 0.2 : 0.08) : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: self.metric.cardStyle ? 10 : 0))
+    }
+
+    private func paceComparisonText(usedPercent: Double) -> String {
+        let used = String(format: L("Used so far %d%%"), Int(usedPercent.rounded()))
+        guard let expected = self.metric.paceExpectedUsedPercent else { return used }
+        let pace = String(format: L("Pace: %@"), "\(Int(expected.rounded()))%")
+        return "\(used) · \(pace)"
     }
 }
 
@@ -1268,6 +1278,7 @@ extension UsageMenuCardView.Model {
                 detailRightText: tertiaryPaceDetail?.rightLabel,
                 pacePercent: tertiaryPaceDetail?.pacePercent,
                 paceUsagePercent: tertiaryPaceDetail?.usedPercent,
+                paceExpectedUsedPercent: tertiaryPaceDetail?.expectedUsedPercent,
                 paceOnTop: tertiaryPaceDetail?.paceOnTop ?? true,
                 warningMarkerPercents: Self.warningMarkerPercents(
                     thresholds: input.quotaWarningThresholds[.weekly],
@@ -1374,6 +1385,7 @@ extension UsageMenuCardView.Model {
         // Abacus: show credits as detail, compute pace on the primary monthly window
         var primaryPacePercent: Double?
         var primaryPaceUsagePercent: Double?
+        var primaryPaceExpectedUsedPercent: Double?
         var primaryPaceOnTop = true
         if let paceDetail = Self.sessionPaceDetail(
             provider: input.provider,
@@ -1385,6 +1397,7 @@ extension UsageMenuCardView.Model {
             primaryDetailRight = paceDetail.rightLabel
             primaryPacePercent = paceDetail.pacePercent
             primaryPaceUsagePercent = paceDetail.usedPercent
+            primaryPaceExpectedUsedPercent = paceDetail.expectedUsedPercent
             primaryPaceOnTop = paceDetail.paceOnTop
         }
         if input.provider == .abacus {
@@ -1407,6 +1420,7 @@ extension UsageMenuCardView.Model {
                     primaryDetailRight = paceDetail.rightLabel
                     primaryPacePercent = paceDetail.pacePercent
                     primaryPaceUsagePercent = paceDetail.usedPercent
+                    primaryPaceExpectedUsedPercent = paceDetail.expectedUsedPercent
                     primaryPaceOnTop = paceDetail.paceOnTop
                 }
             }
@@ -1416,6 +1430,7 @@ extension UsageMenuCardView.Model {
             primaryDetailRight = paceDetail.rightLabel
             primaryPacePercent = paceDetail.pacePercent
             primaryPaceUsagePercent = paceDetail.usedPercent
+            primaryPaceExpectedUsedPercent = paceDetail.expectedUsedPercent
             primaryPaceOnTop = paceDetail.paceOnTop
         }
         // Legacy request-based Cursor plans: surface the raw used/limit quota on its own line,
@@ -1437,6 +1452,7 @@ extension UsageMenuCardView.Model {
             primaryDetailRight = regen.pace.rightLabel
             primaryPacePercent = regen.pace.pacePercent
             primaryPaceUsagePercent = regen.pace.usedPercent
+            primaryPaceExpectedUsedPercent = regen.pace.expectedUsedPercent
             primaryPaceOnTop = regen.pace.paceOnTop
         }
         let primaryStatusText = input.provider == .deepseek ? primaryDetailText : nil
@@ -1456,6 +1472,7 @@ extension UsageMenuCardView.Model {
             detailRightText: primaryDetailRight,
             pacePercent: primaryPacePercent,
             paceUsagePercent: primaryPaceUsagePercent,
+            paceExpectedUsedPercent: primaryPaceExpectedUsedPercent,
             paceOnTop: primaryPaceOnTop,
             warningMarkerPercents: Self.warningMarkerPercents(
                 thresholds: input.quotaWarningThresholds[.session],
@@ -1504,6 +1521,7 @@ extension UsageMenuCardView.Model {
                 rightLabel: nil,
                 pacePercent: nil,
                 usedPercent: nil,
+                expectedUsedPercent: nil,
                 paceOnTop: true)
         }
         if input.provider == .alibaba || input.provider == .alibabatokenplan,
@@ -1533,6 +1551,7 @@ extension UsageMenuCardView.Model {
                 rightLabel: nil,
                 pacePercent: nil,
                 usedPercent: nil,
+                expectedUsedPercent: nil,
                 paceOnTop: true)
         }
         if let cursorPaceDetail = Self.cursorBillingCyclePaceDetail(
@@ -1571,6 +1590,7 @@ extension UsageMenuCardView.Model {
             detailRightText: paceDetail?.rightLabel,
             pacePercent: paceDetail?.pacePercent,
             paceUsagePercent: paceDetail?.usedPercent,
+            paceExpectedUsedPercent: paceDetail?.expectedUsedPercent,
             paceOnTop: paceDetail?.paceOnTop ?? true,
             warningMarkerPercents: Self.weeklyMarkerPercents(input: input, windowMinutes: weekly.windowMinutes))
     }
@@ -1622,6 +1642,7 @@ extension UsageMenuCardView.Model {
                 detailRightText: sessionResetPrompt == nil ? paceDetail?.rightLabel : nil,
                 pacePercent: paceDetail?.pacePercent,
                 paceUsagePercent: sessionResetPrompt == nil ? paceDetail?.usedPercent : nil,
+                paceExpectedUsedPercent: sessionResetPrompt == nil ? paceDetail?.expectedUsedPercent : nil,
                 paceOnTop: paceDetail?.paceOnTop ?? true,
                 warningMarkerPercents: Self.codexLaneMarkerPercents(
                     input: input,

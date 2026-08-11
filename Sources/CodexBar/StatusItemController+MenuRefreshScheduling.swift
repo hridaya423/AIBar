@@ -123,7 +123,8 @@ extension StatusItemController {
         for provider in self.store.enabledProvidersForDisplay() {
             let tokenSignature = self.tokenSnapshotReadinessSignature(for: provider)
             let usageHistoryVisible = self.store.supportsPlanUtilizationHistory(for: provider) &&
-                !self.store.shouldHidePlanUtilizationMenuItem(for: provider)
+                !self.store.shouldHidePlanUtilizationMenuItem(for: provider) &&
+                self.store.subscriptionUtilizationEstimate(for: provider) != nil
             parts.append(
                 [
                     provider.rawValue,

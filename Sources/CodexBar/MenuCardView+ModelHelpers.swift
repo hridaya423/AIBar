@@ -7,6 +7,7 @@ extension UsageMenuCardView.Model {
         let rightLabel: String?
         let pacePercent: Double?
         let usedPercent: Double?
+        let expectedUsedPercent: Double?
         let paceOnTop: Bool
     }
 
@@ -44,6 +45,7 @@ extension UsageMenuCardView.Model {
                 detailRightText: PersonalInfoRedactor.redactEmails(in: metric.detailRightText, isEnabled: true),
                 pacePercent: metric.pacePercent,
                 paceUsagePercent: metric.paceUsagePercent,
+                paceExpectedUsedPercent: metric.paceExpectedUsedPercent,
                 paceOnTop: metric.paceOnTop,
                 warningMarkerPercents: metric.warningMarkerPercents,
                 cardStyle: metric.cardStyle)
@@ -370,6 +372,7 @@ extension UsageMenuCardView.Model {
             rightLabel: detail.rightLabel,
             pacePercent: pacePercent,
             usedPercent: actualUsed,
+            expectedUsedPercent: expectedUsed,
             paceOnTop: paceOnTop)
     }
 
@@ -407,6 +410,7 @@ extension UsageMenuCardView.Model {
             rightLabel: detail.rightLabel,
             pacePercent: pacePercent,
             usedPercent: actualUsed,
+            expectedUsedPercent: expectedUsed,
             paceOnTop: paceOnTop)
     }
 
@@ -422,8 +426,7 @@ extension UsageMenuCardView.Model {
     }
 
     private static func displayableWeeklyPace(_ pace: UsagePace?) -> UsagePace? {
-        guard let pace else { return nil }
-        return pace.expectedUsedPercent >= 3 || pace.etaSeconds == 0 ? pace : nil
+        pace
     }
 
     static func cursorBillingCyclePaceDetail(
@@ -534,6 +537,7 @@ extension UsageMenuCardView.Model {
                 detailRightText: usageKnown ? paceDetail?.rightLabel : nil,
                 pacePercent: usageKnown ? paceDetail?.pacePercent : nil,
                 paceUsagePercent: usageKnown ? paceDetail?.usedPercent : nil,
+                paceExpectedUsedPercent: usageKnown ? paceDetail?.expectedUsedPercent : nil,
                 paceOnTop: paceDetail?.paceOnTop ?? true)
         }
     }
@@ -719,6 +723,7 @@ extension UsageMenuCardView.Model {
                 rightLabel: right,
                 pacePercent: nil,
                 usedPercent: nil,
+                expectedUsedPercent: nil,
                 paceOnTop: true))
     }
 
@@ -757,6 +762,7 @@ extension UsageMenuCardView.Model {
                 rightLabel: right,
                 pacePercent: nil,
                 usedPercent: nil,
+                expectedUsedPercent: nil,
                 paceOnTop: true))
     }
 }
