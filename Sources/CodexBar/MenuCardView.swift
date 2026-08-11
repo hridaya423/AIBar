@@ -2,6 +2,8 @@ import AppKit
 import CodexBarCore
 import SwiftUI
 
+// swiftlint:disable file_length
+
 enum UsageMenuCardLayout {
     static let horizontalPadding: CGFloat = 20
     static let headerOnlyVerticalPadding: CGFloat = 7
