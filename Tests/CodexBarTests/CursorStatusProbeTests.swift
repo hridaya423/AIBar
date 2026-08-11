@@ -4,6 +4,8 @@ import Testing
 @testable import CodexBarCore
 
 @Suite(.serialized)
+// Provider parsing scenarios intentionally stay together so the serialized URLProtocol fixture remains scoped.
+// swiftlint:disable:next type_body_length
 struct CursorStatusProbeTests {
     // MARK: - Usage Summary Parsing
 
