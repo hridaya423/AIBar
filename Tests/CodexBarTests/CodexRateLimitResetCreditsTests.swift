@@ -70,6 +70,17 @@ struct CodexRateLimitResetCreditsTests {
 
     @Test
     func `decodes credits and skips stale available expiry`() throws {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let now = Date()
+        let expiredGrantedAt = formatter.string(from: now.addingTimeInterval(-172_800))
+        let expiredAt = formatter.string(from: now.addingTimeInterval(-86_400))
+        let earlierGrantedAt = formatter.string(from: now.addingTimeInterval(-3_600))
+        let earlierExpiresAt = formatter.string(from: now.addingTimeInterval(86_400))
+        let laterGrantedAt = formatter.string(from: now.addingTimeInterval(-1_800))
+        let laterExpiresAt = formatter.string(from: now.addingTimeInterval(172_800))
+        let futureStatusGrantedAt = formatter.string(from: now.addingTimeInterval(-900))
+        let futureStatusExpiresAt = formatter.string(from: now.addingTimeInterval(259_200))
         let json = """
         {
           "credits": [
@@ -77,15 +88,15 @@ struct CodexRateLimitResetCreditsTests {
               "id": "RateLimitResetCredit_expired_available",
               "reset_type": "codex_rate_limits",
               "status": "available",
-              "granted_at": "2026-05-18T00:39:53Z",
-              "expires_at": "2026-06-17T00:39:53Z"
+              "granted_at": "\(expiredGrantedAt)",
+              "expires_at": "\(expiredAt)"
             },
             {
               "id": "RateLimitResetCredit_later",
               "reset_type": "codex_rate_limits",
               "status": "available",
-              "granted_at": "2026-06-18T00:39:53.731630Z",
-              "expires_at": "2026-07-18T00:39:53.731630Z",
+              "granted_at": "\(laterGrantedAt)",
+              "expires_at": "\(laterExpiresAt)",
               "redeem_started_at": null,
               "redeemed_at": null,
               "profile_image_url": "https://example.com/codex.png",
@@ -97,8 +108,8 @@ struct CodexRateLimitResetCreditsTests {
               "id": "RateLimitResetCredit_earlier",
               "reset_type": "codex_rate_limits",
               "status": "available",
-              "granted_at": "2026-06-12T04:03:43.263391Z",
-              "expires_at": "2026-07-12T04:03:43.263391Z",
+              "granted_at": "\(earlierGrantedAt)",
+              "expires_at": "\(earlierExpiresAt)",
               "redeem_started_at": null,
               "redeemed_at": null,
               "title": "One free rate limit reset",
@@ -108,8 +119,8 @@ struct CodexRateLimitResetCreditsTests {
               "id": "RateLimitResetCredit_future_status",
               "reset_type": "codex_rate_limits",
               "status": "future_status",
-              "granted_at": "2026-06-12T04:03:43Z",
-              "expires_at": "2026-07-10T04:03:43Z",
+              "granted_at": "\(futureStatusGrantedAt)",
+              "expires_at": "\(futureStatusExpiresAt)",
               "redeem_started_at": null,
               "redeemed_at": null,
               "title": "One free rate limit reset",
