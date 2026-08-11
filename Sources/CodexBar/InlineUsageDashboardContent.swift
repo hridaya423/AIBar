@@ -674,7 +674,8 @@ extension UsageMenuCardView.Model {
     }
 
     private static func shortModelName(_ name: String) -> String {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = UsageFormatter.modelDisplayName(name)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count > 26 else { return trimmed }
         return String(trimmed.prefix(25)) + "…"
     }

@@ -287,7 +287,7 @@ struct ProviderInlineDashboardModelTests {
 
         #expect(model.inlineUsageDashboard?.kpis.first?.value == "€1.50")
         #expect(model.inlineUsageDashboard?.points.first?.accessibilityValue == "2023-11-14: €1.50")
-        #expect(model.inlineUsageDashboard?.detailLines.contains("Top model: mistral-large") == true)
+        #expect(model.inlineUsageDashboard?.detailLines.contains { $0.hasPrefix("Top model: mistral-large") } == true)
     }
 
     @Test
