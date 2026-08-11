@@ -302,6 +302,8 @@
 "Stored in ~/.codexbar/config.json. You can also provide KILO_API_KEY or " = "Przechowywane w ~/.codexbar/config.json. Możesz też podać KILO_API_KEY lub ";
 "Stores local Codex usage history (8 weeks) to personalize Pace predictions." = "Przechowuje lokalną historię użycia Codex (8 tygodni), aby personalizować prognozy Tempo.";
 "Subscription Utilization" = "Wykorzystanie subskrypcji";
+"Subscription value this month" = "Wartość subskrypcji w tym miesiącu";
+"Estimate sharpens as your weekly limit fills." = "Szacunek staje się dokładniejszy wraz ze zbliżaniem się do tygodniowego limitu.";
 "Surprise me" = "Zaskocz mnie";
 "Switcher shows icons" = "Przełącznik pokazuje ikony";
 "Symlink CodexBarCLI to /usr/local/bin and /opt/homebrew/bin as codexbar." = "Dowiąż symbolicznie CodexBarCLI do /usr/local/bin i /opt/homebrew/bin jako codexbar.";
@@ -642,6 +644,8 @@
 "display_mode_pace_desc" = "Pokaż wskaźnik tempa (np. +5%)";
 "display_mode_both_desc" = "Pokaż jednocześnie procent i tempo (np. 45% · +5%)";
 "display_mode_reset_time_desc" = "Pokaż godzinę resetu dla wybranej metryki (np. ↻ 15:56)";
+"display_mode_percent_and_reset" = "Procent + reset";
+"display_mode_percent_and_reset_desc" = "Pokaż pozostały procent i odliczanie do resetu (np. 42% 4 godz. · T 78% 3 dni dla Codex)";
 
 /* Provider status */
 "status_operational" = "Operacyjne";
@@ -1100,7 +1104,8 @@
 "%d manual resets available" = "Dostępne ręczne resety: %d";
 "Reset bank" = "Bank resetów";
 "Next expires %@" = "Następny wygasa %@";
-"Available reset" = "Available reset";
+"Available reset" = "Dostępny reset";
+"↻ Reset available — use it to keep going" = "↻ Dostępny reset — użyj go, aby działać dalej";
 "byte_unit_byte" = "bajt";
 "byte_unit_bytes" = "bajty";
 "byte_unit_kilobyte" = "kilobajt";
@@ -1119,6 +1124,6 @@
 "Codex reset used" = "Reset Codex użyty";
 "%d window reset." = "Zresetowano %d okno.";
 "Codex reset failed" = "Reset Codex nie powiódł się";
-"Projected empty tomorrow" = "Projected empty tomorrow";
-"Runs out tomorrow" = "Runs out tomorrow";
-"Used so far %d%%" = "Used so far %d%%";
+"Projected empty tomorrow" = "Przewidywane wyczerpanie jutro";
+"Runs out tomorrow" = "Skończy się jutro";
+"Used so far %d%%" = "Wykorzystano dotąd %d%%";

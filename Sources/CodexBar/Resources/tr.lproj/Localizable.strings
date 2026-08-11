@@ -302,6 +302,8 @@
 "Stored in ~/.codexbar/config.json. You can also provide KILO_API_KEY or " = "~/.codexbar/config.json dosyasında depolandı. Ayrıca KILO_API_KEY sağlayabilirsiniz veya ";
 "Stores local Codex usage history (8 weeks) to personalize Pace predictions." = "Hız tahminlerini kişiselleştirmek için yerel Codex kullanım geçmişini (8 hafta) depolar.";
 "Subscription Utilization" = "Abonelik Kullanımı";
+"Subscription value this month" = "Bu ay abonelik değeri";
+"Estimate sharpens as your weekly limit fills." = "Haftalık limitiniz doldukça tahmin netleşir.";
 "Surprise me" = "Beni şaşırt";
 "Switcher shows icons" = "Değiştirici simgeleri gösterir";
 "Symlink CodexBarCLI to /usr/local/bin and /opt/homebrew/bin as codexbar." = "CodexBarCLI'yi codexbar olarak /usr/local/bin ve /opt/homebrew/bin dizinlerine sembolik bağlayın.";
@@ -638,6 +640,8 @@
 "display_mode_percent_desc" = "Kalan/harcanan yüzdesini göster (ör. %45)";
 "display_mode_pace_desc" = "Hız göstergesini göster (ör. +%5)";
 "display_mode_both_desc" = "Hem yüzdeyi hem hızı göster (ör. %45 · +%5)";
+"display_mode_percent_and_reset" = "Yüzde + sıfırlama";
+"display_mode_percent_and_reset_desc" = "Kalan yüzdeyi ve sıfırlama geri sayımını göster (Codex için ör. %42 4 sa · H %78 3 gün)";
 
 /* Provider status */
 "status_operational" = "Çalışır durumda";
@@ -1098,7 +1102,8 @@
 "%d manual resets available" = "%d manuel sıfırlama kullanılabilir";
 "Reset bank" = "Sıfırlama bankası";
 "Next expires %@" = "Sonraki sona erme %@";
-"Available reset" = "Available reset";
+"Available reset" = "Kullanılabilir sıfırlama";
+"↻ Reset available — use it to keep going" = "↻ Sıfırlama kullanılabilir — devam etmek için kullanın";
 "byte_unit_byte" = "bayt";
 "byte_unit_bytes" = "bayt";
 "byte_unit_kilobyte" = "kilobayt";
@@ -1117,6 +1122,6 @@
 "Codex reset used" = "Codex sıfırlaması kullanıldı";
 "%d window reset." = "%d pencere sıfırlandı.";
 "Codex reset failed" = "Codex sıfırlaması başarısız";
-"Projected empty tomorrow" = "Projected empty tomorrow";
-"Runs out tomorrow" = "Runs out tomorrow";
-"Used so far %d%%" = "Used so far %d%%";
+"Projected empty tomorrow" = "Yarına kadar tükenmesi bekleniyor";
+"Runs out tomorrow" = "Yarın tükenir";
+"Used so far %d%%" = "Şimdiye kadar %d%% kullanıldı";

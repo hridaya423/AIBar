@@ -302,6 +302,8 @@
 "Stored in ~/.codexbar/config.json. You can also provide KILO_API_KEY or " = "Memorizzato in ~/.codexbar/config.json. Puoi anche fornire KILO_API_KEY o ";
 "Stores local Codex usage history (8 weeks) to personalize Pace predictions." = "Memorizza la cronologia di utilizzo locale di Codex (8 settimane) per personalizzare le previsioni di andamento.";
 "Subscription Utilization" = "Utilizzo abbonamento";
+"Subscription value this month" = "Valore dell'abbonamento questo mese";
+"Estimate sharpens as your weekly limit fills." = "La stima diventa più precisa man mano che riempi il limite settimanale.";
 "Surprise me" = "Sorprendimi";
 "Switcher shows icons" = "Il selettore mostra icone";
 "Symlink CodexBarCLI to /usr/local/bin and /opt/homebrew/bin as codexbar." = "Crea il symlink di CodexBarCLI in /usr/local/bin e /opt/homebrew/bin come codexbar.";
@@ -642,6 +644,8 @@
 "display_mode_pace_desc" = "Mostra indicatore andamento (es. +5%)";
 "display_mode_both_desc" = "Mostra percentuale e andamento (es. 45% · +5%)";
 "display_mode_reset_time_desc" = "Mostra l'ora di reimpostazione per la metrica selezionata (es. ↻ 15:56)";
+"display_mode_percent_and_reset" = "Percentuale + reset";
+"display_mode_percent_and_reset_desc" = "Mostra la percentuale residua e il conto alla rovescia del reset (es. 42% 4 h · S 78% 3 g per Codex)";
 
 /* Provider status */
 "status_operational" = "Operativo";
@@ -1100,7 +1104,8 @@
 "%d manual resets available" = "%d reimpostazioni manuali disponibili";
 "Reset bank" = "Banca reset";
 "Next expires %@" = "La prossima scade %@";
-"Available reset" = "Available reset";
+"Available reset" = "Reset disponibile";
+"↻ Reset available — use it to keep going" = "↻ Reset disponibile — usalo per continuare";
 "byte_unit_byte" = "byte";
 "byte_unit_bytes" = "byte";
 "byte_unit_kilobyte" = "kilobyte";
@@ -1119,6 +1124,6 @@
 "Codex reset used" = "Reset Codex usato";
 "%d window reset." = "%d finestra reimpostata.";
 "Codex reset failed" = "Reset Codex non riuscito";
-"Projected empty tomorrow" = "Projected empty tomorrow";
-"Runs out tomorrow" = "Runs out tomorrow";
-"Used so far %d%%" = "Used so far %d%%";
+"Projected empty tomorrow" = "Esaurimento previsto domani";
+"Runs out tomorrow" = "Si esaurisce domani";
+"Used so far %d%%" = "Usato finora: %d%%";

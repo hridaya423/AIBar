@@ -302,6 +302,8 @@
 "Stored in ~/.codexbar/config.json. You can also provide KILO_API_KEY or " = "Disimpan di ~/.codexbar/config.json. Anda juga dapat menyediakan KILO_API_KEY atau ";
 "Stores local Codex usage history (8 weeks) to personalize Pace predictions." = "Menyimpan riwayat penggunaan Codex lokal (8 minggu) untuk personalisasi prediksi Pace.";
 "Subscription Utilization" = "Pemanfaatan Langganan";
+"Subscription value this month" = "Nilai langganan bulan ini";
+"Estimate sharpens as your weekly limit fills." = "Perkiraan menjadi lebih akurat saat batas mingguan terisi.";
 "Surprise me" = "Kejutkan saya";
 "Switcher shows icons" = "Pengalih tampilkan ikon";
 "Symlink CodexBarCLI to /usr/local/bin and /opt/homebrew/bin as codexbar." = "Symlink CodexBarCLI ke /usr/local/bin dan /opt/homebrew/bin sebagai codexbar.";
@@ -642,6 +644,8 @@
 "display_mode_pace_desc" = "Tampilkan indikator pace (mis. +5%)";
 "display_mode_both_desc" = "Tampilkan persentase dan pace (mis. 45% · +5%)";
 "display_mode_reset_time_desc" = "Tampilkan waktu reset untuk metrik yang dipilih (mis. ↻ 3:56 PM)";
+"display_mode_percent_and_reset" = "Persen + reset";
+"display_mode_percent_and_reset_desc" = "Tampilkan persen tersisa dan hitung mundur reset (mis. 42% 4 jam · M 78% 3 hari untuk Codex)";
 
 /* Provider status */
 "status_operational" = "Operasional";
@@ -1100,7 +1104,8 @@
 "%d manual resets available" = "%d pengaturan ulang manual tersedia";
 "Reset bank" = "Bank reset";
 "Next expires %@" = "Berikutnya kedaluwarsa %@";
-"Available reset" = "Available reset";
+"Available reset" = "Reset tersedia";
+"↻ Reset available — use it to keep going" = "↻ Reset tersedia — gunakan untuk melanjutkan";
 "byte_unit_byte" = "byte";
 "byte_unit_bytes" = "byte";
 "byte_unit_kilobyte" = "kilobyte";
@@ -1120,6 +1125,6 @@
 "Codex reset used" = "Reset Codex digunakan";
 "%d window reset." = "%d jendela direset.";
 "Codex reset failed" = "Reset Codex gagal";
-"Projected empty tomorrow" = "Projected empty tomorrow";
-"Runs out tomorrow" = "Runs out tomorrow";
-"Used so far %d%%" = "Used so far %d%%";
+"Projected empty tomorrow" = "Diperkirakan habis besok";
+"Runs out tomorrow" = "Habis besok";
+"Used so far %d%%" = "Terpakai sejauh ini %d%%";
