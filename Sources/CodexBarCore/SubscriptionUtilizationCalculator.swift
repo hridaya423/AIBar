@@ -62,7 +62,6 @@ public enum SubscriptionUtilizationCalculator {
             isProjected: fill < 99.5)
     }
 
-
     static func dayKey(from date: Date) -> String {
         let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", comps.year ?? 1970, comps.month ?? 1, comps.day ?? 1)

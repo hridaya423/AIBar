@@ -54,7 +54,6 @@ public struct OpenCodeTokenCostReader: Sendable {
         }
     }
 
-
     private struct SessionRow {
         let updatedMs: Int64
         let providerID: String
@@ -126,7 +125,6 @@ public struct OpenCodeTokenCostReader: Sendable {
         let providerID = (object["providerID"] as? String) ?? (object["provider"] as? String) ?? ""
         return (providerID, modelID)
     }
-
 
     private struct DayAccumulator {
         var inputTokens = 0

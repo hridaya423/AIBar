@@ -6,7 +6,6 @@ import Testing
 @testable import CodexBarCore
 
 struct OpenCodeTokenCostReaderTests {
-
     @Test func parsesModelJSON() {
         let parsed = OpenCodeTokenCostReader.parseModel(#"{"id":"gpt-5.5","providerID":"openai","variant":"low"}"#)
         #expect(parsed.providerID == "openai")
@@ -50,7 +49,6 @@ struct OpenCodeTokenCostReaderTests {
             pricing: nil)
         #expect(cost == 4.2)
     }
-
 
     @Test func aggregatesRecordedCostByDayForUnpriceableModels() throws {
         let dbURL = FileManager.default.temporaryDirectory
@@ -138,7 +136,6 @@ struct OpenCodeTokenCostReaderTests {
             .loadDailyReport(since: Date(timeIntervalSince1970: 0), until: Date())
         #expect(report.data.isEmpty)
     }
-
 
     private func ms(_ date: Date) -> Int64 {
         Int64(date.timeIntervalSince1970 * 1000)

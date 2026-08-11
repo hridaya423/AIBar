@@ -58,7 +58,6 @@ struct CodexAccountActivityTests {
         #expect(state.mostActiveAccountID(now: Self.t0.addingTimeInterval(60), within: Self.window) == "b")
     }
 
-
     private static func session(used: Double, resetsInSeconds: TimeInterval?) -> RateWindow {
         RateWindow(
             usedPercent: used,

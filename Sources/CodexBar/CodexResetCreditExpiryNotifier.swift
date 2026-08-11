@@ -12,7 +12,7 @@ struct CodexResetCreditExpiryNotifier {
 
     func postExpiringCreditsIfNeeded(snapshot: CodexRateLimitResetCreditsSnapshot, now: Date = Date()) {
         let key = "codexResetCreditExpiryNotificationsPosted"
-        
+
         var posted = Set(self.userDefaults.stringArray(forKey: key) ?? [])
         var changed = false
 

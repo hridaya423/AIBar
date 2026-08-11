@@ -27,7 +27,6 @@ public struct CodexUsagePatternModel: Sendable, Equatable {
         self.eventCount = eventCount
     }
 
-
     public static func build(events: [Event], calendar: Calendar = .current) -> CodexUsagePatternModel {
         var grid = Array(repeating: Array(repeating: 0.0, count: Self.hourCount), count: Self.weekdayCount)
         var count = 0
@@ -50,7 +49,6 @@ public struct CodexUsagePatternModel: Sendable, Equatable {
         return CodexUsagePatternModel(intensity: grid, eventCount: count)
     }
 
-
     public func mass(from start: Date, to end: Date, calendar: Calendar = .current) -> Double {
         guard end > start else { return 0 }
         var total = 0.0
@@ -69,7 +67,6 @@ public struct CodexUsagePatternModel: Sendable, Equatable {
         }
         return total
     }
-
 
     public func usagePace(window: RateWindow, now: Date = Date(), calendar: Calendar = .current) -> UsagePace? {
         guard self.isUsable else { return nil }
