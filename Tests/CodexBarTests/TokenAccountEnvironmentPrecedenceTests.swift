@@ -563,6 +563,12 @@ struct TokenAccountEnvironmentPrecedenceTests {
 
     @Test
     func `codex CLI ignores relative profile homes`() throws {
+        let managedStoreURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("codex-cli-relative-home-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: managedStoreURL) }
+        try FileManagedCodexAccountStore(fileURL: managedStoreURL).storeAccounts(
+            ManagedCodexAccountSet(version: FileManagedCodexAccountStore.currentVersion, accounts: []))
+
         let config = CodexBarConfig(providers: [
             ProviderConfig(
                 id: .codex,
@@ -573,7 +579,8 @@ struct TokenAccountEnvironmentPrecedenceTests {
             selection: TokenAccountCLISelection(label: nil, index: nil, allAccounts: false),
             config: config,
             verbose: false,
-            baseEnvironment: ["CODEX_HOME": "/tmp/ambient-codex"])
+            baseEnvironment: ["CODEX_HOME": "/tmp/ambient-codex"],
+            managedCodexAccountStoreURL: managedStoreURL)
 
         let environment = context.environment(
             base: ["CODEX_HOME": "/tmp/ambient-codex"],
