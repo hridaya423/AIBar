@@ -339,9 +339,12 @@ private func makeUpdaterController() -> UpdaterProviding {
         return DisabledUpdaterController(unavailableReason: "Updates unavailable in this build.")
     }
 
+    let bundleDefault = (Bundle.main.object(forInfoDictionaryKey: "SUEnableAutomaticChecks") as? Bool) ?? true
+    let savedAutoUpdate = (UserDefaults.standard.object(forKey: "autoUpdateEnabled") as? Bool) ?? bundleDefault
+
     if InstallOrigin.isHomebrewCask(appBundleURL: bundleURL) {
         return HomebrewUpdaterController(
-            savedAutoCheck: (UserDefaults.standard.object(forKey: "autoUpdateEnabled") as? Bool) ?? true,
+            savedAutoCheck: savedAutoUpdate,
             notifier: HomebrewUpdateNotifier(dependencies: .live))
     }
 
@@ -349,9 +352,7 @@ private func makeUpdaterController() -> UpdaterProviding {
         return DisabledUpdaterController(unavailableReason: "Updates unavailable in this build.")
     }
 
-    // Default to true for first launch; fall back to saved preference thereafter.
-    return SparkleUpdaterController(
-        savedAutoUpdate: (UserDefaults.standard.object(forKey: "autoUpdateEnabled") as? Bool) ?? true)
+    return SparkleUpdaterController(savedAutoUpdate: savedAutoUpdate)
 }
 #else
 private func makeUpdaterController() -> UpdaterProviding {
