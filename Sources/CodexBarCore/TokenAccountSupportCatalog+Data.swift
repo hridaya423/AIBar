@@ -157,5 +157,13 @@ extension TokenAccountSupportCatalog {
             injection: .cookieHeader,
             requiresManualCookieSource: true,
             cookieName: nil),
+        .devin: TokenAccountSupport(
+            title: "Devin accounts",
+            subtitle: "Chrome profile sessions are added automatically; paste Bearer tokens to add more.",
+            placeholder: "Bearer auth1_… or eyJ…",
+            injection: .environment(key: "DEVIN_BEARER_TOKEN"),
+            requiresManualCookieSource: false,
+            cookieName: nil,
+            environmentKeysToScrub: ["DEVIN_AUTHORIZATION", "DEVIN_ORGANIZATION", "DEVIN_ORG"]),
     ]
 }

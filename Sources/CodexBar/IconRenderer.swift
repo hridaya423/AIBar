@@ -110,6 +110,57 @@ enum IconRenderer {
     }
 
     // swiftlint:disable function_body_length
+    /// Renders "[icon] text  [icon] text" segments into a single template image for the merged
+    /// "all providers" menu bar item. Drawn opaque; `isTemplate` lets AppKit tint the whole
+    /// image for the current menu bar appearance like any other status icon.
+    static func makeCombinedProvidersIcon(segments: [(icon: NSImage, text: String)]) -> NSImage {
+        let textAttributes: [NSAttributedString.Key: Any] = [
+            .font: NSFont.menuBarFont(ofSize: 0),
+            .foregroundColor: NSColor.black,
+        ]
+        let iconSize: CGFloat = 13
+        let iconTextGap: CGFloat = 3
+        let segmentGap: CGFloat = 8
+        let height = Self.outputSize.height
+
+        var measured: [(icon: NSImage, text: NSAttributedString, textWidth: CGFloat)] = []
+        var width: CGFloat = 0
+        for segment in segments {
+            let text = NSAttributedString(string: segment.text, attributes: textAttributes)
+            let textWidth = ceil(text.size().width)
+            if !measured.isEmpty { width += segmentGap }
+            width += iconSize + iconTextGap + textWidth
+            measured.append((segment.icon, text, textWidth))
+        }
+
+        let image = NSImage(size: NSSize(width: ceil(width), height: height))
+        image.lockFocus()
+        var x: CGFloat = 0
+        for (index, segment) in measured.enumerated() {
+            if index > 0 { x += segmentGap }
+            segment.icon.draw(
+                in: CGRect(
+                    x: x,
+                    y: ((height - iconSize) / 2).rounded(.down),
+                    width: iconSize,
+                    height: iconSize),
+                from: .zero,
+                operation: .sourceOver,
+                fraction: 1)
+            x += iconSize + iconTextGap
+            let textHeight = segment.text.size().height
+            segment.text.draw(in: CGRect(
+                x: x,
+                y: (height - textHeight) / 2,
+                width: segment.textWidth,
+                height: textHeight))
+            x += segment.textWidth
+        }
+        image.unlockFocus()
+        image.isTemplate = true
+        return image
+    }
+
     static func makeIcon(
         primaryRemaining: Double?,
         weeklyRemaining: Double?,

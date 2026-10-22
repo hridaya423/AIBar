@@ -2,7 +2,19 @@
 
 ## 0.37.1 — Unreleased
 
+### Added
+- Menu bar: "Merged icon shows all providers" — the single merged status item can render every enabled provider inline as [icon] percent+reset segments instead of only the primary provider's stat.
+
+### Removed
+- In-app localization catalogs other than English (unused language picker removed with them).
+
 ### Fixed
+- Devin: honor hidden daily quotas, preserve exact one-percent usage, and expose extra usage balance.
+- Devin/Windsurf: keep automatic session import working when the "Disable Keychain access" debug toggle is on; both read Chromium localStorage directly and never touch the Keychain, so they no longer get forced into manual-token mode and report "No available fetch strategy".
+- Devin: scan every installed Chromium browser's localStorage for the app.devin.ai session instead of Chrome only — the import reads plaintext localStorage and never prompts the Keychain, so there was no reason to skip Helium, Arc, Edge, Brave, and friends.
+- Devin: resolve the organization belonging to the signed-in session's user — a stale second login's org keys in the same browser profile could be picked at random and fetch that org's empty quota, showing phantom "Daily 100% / Weekly 100%" until the next lucky refresh.
+- OpenAI web: skip the hidden dashboard WebView when the usage API already has verified data, and evict WebViews on release instead of keeping the ChatGPT page resident; background refreshes no longer scrape the page inside the refresh interval.
+- Settings: reopen reliably after the lifecycle keepalive window is recreated; the menu action now falls back to the AppKit Settings action instead of failing silently.
 - Usage display: keep positive values below one percent visible instead of rounding them to zero. Thanks @Max0633!
 - Menu: match the persistent Refresh row to native menu styling without replacing keyboard-navigable Settings, About, and Quit actions. Thanks @Zihao-Qi!
 - MiniMax: recover detailed token-plan windows from the remains API when the coding-plan page only exposes coarse usage. Thanks @Yuxin-Qiao!

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ProviderTokenAccount: Codable, Identifiable, Sendable {
+public struct ProviderTokenAccount: Codable, Identifiable, Sendable, Equatable {
     public let id: UUID
     public let label: String
     public let token: String
@@ -55,7 +55,7 @@ public struct ProviderTokenAccount: Codable, Identifiable, Sendable {
     }
 }
 
-public struct ProviderTokenAccountData: Codable, Sendable {
+public struct ProviderTokenAccountData: Codable, Sendable, Equatable {
     public let version: Int
     public let accounts: [ProviderTokenAccount]
     public let activeIndex: Int

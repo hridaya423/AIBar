@@ -106,6 +106,7 @@ public struct ProviderConfig: Codable, Sendable, Identifiable {
     public var workspaceID: String?
     public var enterpriseHost: String?
     public var tokenAccounts: ProviderTokenAccountData?
+    public var hiddenTokenAccountExternalIdentifiers: [String]?
     public var codexActiveSource: CodexActiveSource?
     public var codexProfileHomePaths: [String]?
     public var quotaWarnings: QuotaWarningConfig?
@@ -127,6 +128,7 @@ public struct ProviderConfig: Codable, Sendable, Identifiable {
         workspaceID: String? = nil,
         enterpriseHost: String? = nil,
         tokenAccounts: ProviderTokenAccountData? = nil,
+        hiddenTokenAccountExternalIdentifiers: [String]? = nil,
         codexActiveSource: CodexActiveSource? = nil,
         codexProfileHomePaths: [String]? = nil,
         quotaWarnings: QuotaWarningConfig? = nil,
@@ -147,6 +149,7 @@ public struct ProviderConfig: Codable, Sendable, Identifiable {
         self.workspaceID = workspaceID
         self.enterpriseHost = enterpriseHost
         self.tokenAccounts = tokenAccounts
+        self.hiddenTokenAccountExternalIdentifiers = hiddenTokenAccountExternalIdentifiers
         self.codexActiveSource = codexActiveSource
         self.codexProfileHomePaths = codexProfileHomePaths
         self.quotaWarnings = quotaWarnings

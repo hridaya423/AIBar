@@ -7,7 +7,7 @@ import Testing
 @Suite(.serialized)
 struct StatusMenuLocalizationRefreshTests {
     @Test
-    func `open merged menu refreshes localized switcher and cost title when language changes`() async {
+    func `open merged menu refreshes switcher and cost title when language changes`() async {
         let previousLanguage = UserDefaults.standard.object(forKey: "appLanguage")
         let previousAppleLanguages = UserDefaults.standard.object(forKey: "AppleLanguages")
         defer {
@@ -73,8 +73,9 @@ struct StatusMenuLocalizationRefreshTests {
         controller.openMenus[ObjectIdentifier(menu)] = menu
         controller.menuRefreshEnabledOverrideForTesting = true
 
-        #expect(Self.switcherButtons(in: menu).first?.title == "Resumen")
-        #expect(menu.items.first(where: { $0.representedObject as? String == "menuCardCost" })?.title == "Coste")
+        // English-only catalog: every language override resolves the same English strings.
+        #expect(Self.switcherButtons(in: menu).first?.title == "Overview")
+        #expect(menu.items.first(where: { $0.representedObject as? String == "menuCardCost" })?.title == "Cost")
 
         let initialSwitcher = menu.items.first?.view as? ProviderSwitcherView
         let initialSwitcherID = initialSwitcher.map(ObjectIdentifier.init)

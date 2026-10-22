@@ -112,7 +112,8 @@ headers, source selection, provider ordering, and token accounts are stored in `
 - Details: `docs/zai.md`.
 
 ## Devin
-- Automatic auth reads the current `auth1_session` token and organization metadata from Chrome localStorage.
+- Automatic auth reads the `auth1_session` token and organization metadata from every Chrome/Chromium profile's
+  localStorage; each discovered org becomes a token account (see `docs/devin.md` → Multiple accounts).
 - Manual auth accepts the `Authorization: Bearer ...` value from an app.devin.ai request.
 - Usage endpoint: `GET /api/<internal-org-id>/billing/quota/usage`.
 - Shows daily and weekly quota percentages with their reset timestamps.

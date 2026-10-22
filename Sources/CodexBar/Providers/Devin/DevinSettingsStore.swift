@@ -33,11 +33,15 @@ extension SettingsStore {
 }
 
 extension SettingsStore {
-    func devinSettingsSnapshot(tokenOverride _: TokenAccountOverride?) -> ProviderSettingsSnapshot
+    func devinSettingsSnapshot(tokenOverride: TokenAccountOverride?) -> ProviderSettingsSnapshot
     .DevinProviderSettings {
-        ProviderSettingsSnapshot.DevinProviderSettings(
+        let account = ProviderTokenAccountSelection.selectedAccount(
+            provider: .devin,
+            settings: self,
+            override: tokenOverride)
+        return ProviderSettingsSnapshot.DevinProviderSettings(
             cookieSource: self.devinCookieSource,
             manualBearerToken: self.devinBearerToken,
-            organization: self.devinOrganization)
+            organization: account?.sanitizedOrganizationID ?? self.devinOrganization)
     }
 }

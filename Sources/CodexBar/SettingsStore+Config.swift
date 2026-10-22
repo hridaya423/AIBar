@@ -1,6 +1,16 @@
 import CodexBarCore
 import Foundation
 
+extension UsageProvider {
+    /// Whether the `.auto` auth source needs macOS Keychain access (Chromium cookie
+    /// decryption via "Chrome Safe Storage"). Devin/Windsurf read browser localStorage
+    /// directly — plaintext, no Keychain — so the debug keychain kill-switch must not
+    /// force them into manual-token mode.
+    var autoCookieSourceRequiresKeychain: Bool {
+        self != .devin && self != .windsurf
+    }
+}
+
 extension SettingsStore {
     func providerConfig(for provider: UsageProvider) -> ProviderConfig? {
         self.configSnapshot.providerConfig(for: provider)
@@ -98,13 +108,19 @@ extension SettingsStore {
 }
 
 extension SettingsStore {
+    /// Effective "keychain blocked" state for a provider's `.auto` auth source: the debug
+    /// toggle only applies when auto actually needs the Keychain.
+    func keychainDisabled(for provider: UsageProvider) -> Bool {
+        self.debugDisableKeychainAccess && provider.autoCookieSourceRequiresKeychain
+    }
+
     func resolvedCookieSource(
         provider: UsageProvider,
         fallback: ProviderCookieSource) -> ProviderCookieSource
     {
         let source = self.configSnapshot.providerConfig(for: provider)?.cookieSource ?? fallback
-        guard self.debugDisableKeychainAccess == false else { return source == .off ? .off : .manual }
-        return source
+        guard self.keychainDisabled(for: provider) else { return source }
+        return source == .off ? .off : .manual
     }
 
     func logProviderModeChange(provider: UsageProvider, field: String, value: String) {

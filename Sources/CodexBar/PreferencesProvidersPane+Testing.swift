@@ -252,6 +252,7 @@ enum ProvidersPaneTestHarness {
             activeIndex: { 0 },
             setActiveIndex: { _ in },
             showsOrganizationField: false,
+            organizationHelpText: nil,
             addAccount: { _, _, _ in },
             removeAccount: { _ in },
             primaryAddActionTitle: nil,

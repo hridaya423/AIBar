@@ -347,11 +347,12 @@ struct ProviderSettingsTokenAccountsRowView: View {
                             self.newToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
                     if self.descriptor.showsOrganizationField {
+                        let helpText = self.descriptor.organizationHelpText
+                            ?? "Optional organization ID for accounts linked to multiple Anthropic organizations."
                         TextField(L("Org ID (optional)"), text: self.$newOrgID)
                             .textFieldStyle(.roundedBorder)
                             .font(.footnote)
-                            .help(
-                                L("Optional organization ID for accounts linked to multiple Anthropic organizations."))
+                            .help(L(helpText))
                     }
                 }
             }

@@ -1348,4 +1348,30 @@ struct SettingsStoreTests {
         let metadata = try #require(ProviderDescriptorRegistry.metadata[.alibaba])
         #expect(store.isProviderEnabled(provider: .alibaba, metadata: metadata))
     }
+
+    @Test
+    func `keychain kill switch keeps localStorage providers on auto`() throws {
+        let suite = "SettingsStoreTests-keychain-localstorage-auto"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defaults.set(true, forKey: "debugDisableKeychainAccess")
+        let configStore = testConfigStore(suiteName: suite)
+        try configStore.save(CodexBarConfig(providers: [
+            ProviderConfig(id: .devin, enabled: true),
+            ProviderConfig(id: .windsurf, enabled: true),
+            ProviderConfig(id: .claude, enabled: true, cookieSource: .auto),
+        ]))
+
+        let store = SettingsStore(
+            userDefaults: defaults,
+            configStore: configStore,
+            zaiTokenStore: NoopZaiTokenStore(),
+            syntheticTokenStore: NoopSyntheticTokenStore())
+
+        // Devin/Windsurf auto-import from Chromium localStorage — no Keychain involved.
+        #expect(store.devinCookieSource == .auto)
+        #expect(store.windsurfCookieSource == .auto)
+        // Cookie-decrypting providers still drop to manual when Keychain is off.
+        #expect(store.claudeCookieSource == .manual)
+    }
 }

@@ -12,21 +12,12 @@ const expectedCodes = [
   "vi", "nl", "tr", "uk", "id", "pl", "fa", "th", "ca", "sv",
 ];
 const catalogCodes = localeCatalog.map((locale) => locale.code);
-const appLanguageSource = fs.readFileSync(
-  path.join(repoRoot, "Sources/CodexBar/PreferencesGeneralPane.swift"),
-  "utf8",
-);
 
 assertEqual(catalogCodes, expectedCodes, "locale catalog");
 assertEqual(
   localeCatalog.filter((locale) => locale.direction === "rtl").map((locale) => locale.code),
   ["ar", "fa"],
   "RTL locale catalog");
-const appCatalogCodes = [...appLanguageSource.matchAll(/case \w+ = "([^"]+)"/g)]
-  .map((match) => match[1])
-  .filter(Boolean)
-  .map((code) => ({ "zh-Hans": "zh-CN", "zh-Hant": "zh-TW", ja: "ja-JP" })[code] ?? code);
-assertEqual(appCatalogCodes, expectedCodes, "app language catalog");
 
 const englishKeys = Object.keys(localeMessages.en).sort();
 for (const locale of localeCatalog) {

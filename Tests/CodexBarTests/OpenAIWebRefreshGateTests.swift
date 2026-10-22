@@ -185,4 +185,68 @@ struct OpenAIWebRefreshGateTests {
 
         #expect(shouldSkip == false)
     }
+
+    @Test
+    func `Dashboard page scrape stays on without history`() {
+        let now = Date()
+
+        let allow = UsageStore.shouldAllowOpenAIDashboardPageScrape(.init(
+            force: false,
+            userInitiated: false,
+            hasHistory: false,
+            lastPageScrapeAt: nil,
+            historyUpdatedAt: nil,
+            now: now,
+            refreshInterval: 300))
+
+        #expect(allow == true)
+    }
+
+    @Test
+    func `Dashboard page scrape skips fresh history`() {
+        let now = Date()
+
+        let allow = UsageStore.shouldAllowOpenAIDashboardPageScrape(.init(
+            force: false,
+            userInitiated: false,
+            hasHistory: true,
+            lastPageScrapeAt: now.addingTimeInterval(-60),
+            historyUpdatedAt: now.addingTimeInterval(-60),
+            now: now,
+            refreshInterval: 300))
+
+        #expect(allow == false)
+    }
+
+    @Test
+    func `Dashboard page scrape resumes after the refresh interval`() {
+        let now = Date()
+
+        let allow = UsageStore.shouldAllowOpenAIDashboardPageScrape(.init(
+            force: false,
+            userInitiated: false,
+            hasHistory: true,
+            lastPageScrapeAt: now.addingTimeInterval(-360),
+            historyUpdatedAt: now.addingTimeInterval(-60),
+            now: now,
+            refreshInterval: 300))
+
+        #expect(allow == true)
+    }
+
+    @Test
+    func `Manual forced refresh still scrapes the dashboard page`() {
+        let now = Date()
+
+        let allow = UsageStore.shouldAllowOpenAIDashboardPageScrape(.init(
+            force: true,
+            userInitiated: true,
+            hasHistory: true,
+            lastPageScrapeAt: now.addingTimeInterval(-60),
+            historyUpdatedAt: now.addingTimeInterval(-60),
+            now: now,
+            refreshInterval: 300))
+
+        #expect(allow == true)
+    }
 }

@@ -298,6 +298,7 @@ extension StatusItemController {
            let brand = ProviderBrandIcon.image(for: primaryProvider)
         {
             let displayText = self.menuBarDisplayText(for: primaryProvider, snapshot: snapshot)
+            let combined = self.mergedMenuBarCombinedImage()
             let signature = [
                 "mode=brandPercent",
                 "provider=\(primaryProvider.rawValue)",
@@ -307,21 +308,31 @@ extension StatusItemController {
                 "credits=\(Self.iconSignatureValue(credits))",
                 "stale=\(stale ? "1" : "0")",
                 "status=\(statusIndicator.rawValue)",
-                "text=\(displayText ?? "nil")",
+                "text=\(combined?.signature ?? displayText ?? "nil")",
                 "warningFlash=\(warningFlash ? "1" : "0")",
+                "flashing=\(self.flashingProvidersSignature)",
                 "anim=\(needsAnimation ? "1" : "0")",
                 "hideCritters=\(self.settings.menuBarHidesCritters ? "1" : "0")",
             ].joined(separator: "|")
             if self.shouldSkipMergedIconRender(signature) {
                 // AppKit can lose button title/image-position state independently of the cached render signature.
                 // Keep the cheap title path self-healing even when the icon image itself can be skipped.
-                self.setButtonTitle(displayText, for: button)
+                if combined == nil {
+                    self.setButtonTitle(displayText, for: button)
+                }
                 self.noteIconPerfRender(skipped: true)
                 return true
             }
-            self.setButtonImage(
-                warningFlash ? Self.quotaWarningFlashImage(base: brand) : brand, for: button)
-            self.setButtonTitle(displayText, for: button)
+            if let combined {
+                self.setButtonImage(
+                    warningFlash ? Self.quotaWarningFlashImage(base: combined.image) : combined.image,
+                    for: button)
+                self.setButtonTitle(nil, for: button)
+            } else {
+                self.setButtonImage(
+                    warningFlash ? Self.quotaWarningFlashImage(base: brand) : brand, for: button)
+                self.setButtonTitle(displayText, for: button)
+            }
             self.noteIconPerfRender(skipped: false)
             return false
         }
@@ -665,6 +676,38 @@ extension StatusItemController {
     nonisolated static func buttonTitle(_ title: String?, hasImage: Bool) -> String {
         guard let title, !title.isEmpty else { return "" }
         return hasImage ? " \(title)" : title
+    }
+
+    private var flashingProvidersSignature: String {
+        self.store.enabledProvidersForDisplay()
+            .filter { self.quotaWarningFlashActive(provider: $0) }
+            .map(\.rawValue)
+            .joined(separator: ",")
+    }
+
+    /// Merged-icon variant of "brand icon + percent": every enabled provider rendered into one
+    /// template image as [icon] text segments instead of only the primary provider's stat.
+    /// Returns nil when fewer than two providers can contribute, falling back to single-provider.
+    private func mergedMenuBarCombinedImage() -> (image: NSImage, signature: String)? {
+        guard self.settings.menuBarMergedShowsAllProviders else { return nil }
+        let providers = self.store.enabledProvidersForDisplay().filter { self.store.isEnabled($0) }
+        guard providers.count > 1 else { return nil }
+        var segments: [(icon: NSImage, text: String)] = []
+        segments.reserveCapacity(providers.count)
+        for provider in providers {
+            guard let icon = ProviderBrandIcon.image(for: provider),
+                  let text = self.menuBarDisplayText(
+                      for: provider,
+                      snapshot: self.store.menuBarIconSnapshot(for: provider)),
+                  !text.isEmpty
+            else {
+                continue
+            }
+            segments.append((icon, text))
+        }
+        guard segments.count > 1 else { return nil }
+        let signature = segments.map { "\($0.text)" }.joined(separator: " · ")
+        return (IconRenderer.makeCombinedProvidersIcon(segments: segments), signature)
     }
 
     func menuBarDisplayText(for provider: UsageProvider, snapshot: UsageSnapshot?) -> String? {

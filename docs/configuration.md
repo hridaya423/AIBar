@@ -59,6 +59,8 @@ All provider fields are optional unless noted.
 - `workspaceID`: provider-specific workspace/deployment/project ID (e.g. Azure OpenAI deployment, OpenAI API project,
   `opencode`).
 - `tokenAccounts`: multi-account tokens for providers in `TokenAccountSupportCatalog`.
+- `hiddenTokenAccountExternalIdentifiers`: external IDs of auto-discovered accounts the user removed, so they are not
+  re-added on the next sync (used by Devin browser-session import).
 
 ## Manual cookies
 Use manual cookies when automatic browser import is unavailable, disabled, or too noisy for your setup.
@@ -159,11 +161,18 @@ and never paste real cookie values or readable DevTools screenshots into public 
       "label": "user@example.com",
       "token": "sk-...",
       "addedAt": 1735123456,
-      "lastUsed": 1735220000
+      "lastUsed": 1735220000,
+      "externalIdentifier": "devin:org:org_abc123",
+      "organizationID": "organizations/org_abc123"
     }
   ]
 }
 ```
+
+`externalIdentifier` and `organizationID` are optional. `externalIdentifier` gives an account a stable identity across
+token rotation (Devin auto-import keys accounts by `devin:org:<internal-org-id>`); `organizationID` scopes the account
+to an organization (Devin accepts `org/<slug>`, `organizations/<id>`, or an org URL; Claude uses it for Anthropic org
+scoping).
 
 ## Provider IDs
 Current IDs (see `Sources/CodexBarCore/Providers/Providers.swift`):

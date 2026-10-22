@@ -2,62 +2,6 @@ import AppKit
 import CodexBarCore
 import SwiftUI
 
-enum AppLanguage: String, CaseIterable, Identifiable {
-    case system = ""
-    case english = "en"
-    case chineseSimplified = "zh-Hans"
-    case chineseTraditional = "zh-Hant"
-    case japanese = "ja"
-    case spanish = "es"
-    case portugueseBrazilian = "pt-BR"
-    case korean = "ko"
-    case german = "de"
-    case french = "fr"
-    case arabic = "ar"
-    case italian = "it"
-    case vietnamese = "vi"
-    case dutch = "nl"
-    case turkish = "tr"
-    case ukrainian = "uk"
-    case indonesian = "id"
-    case polish = "pl"
-    case persian = "fa"
-    case thai = "th"
-    case catalan = "ca"
-    case swedish = "sv"
-
-    var id: String {
-        self.rawValue
-    }
-
-    var label: String {
-        switch self {
-        case .system: L("language_system")
-        case .english: L("language_english")
-        case .chineseSimplified: L("language_chinese_simplified")
-        case .chineseTraditional: L("language_chinese_traditional")
-        case .japanese: L("language_japanese")
-        case .spanish: L("language_spanish")
-        case .portugueseBrazilian: L("language_portuguese_brazilian")
-        case .korean: L("language_korean")
-        case .german: L("language_german")
-        case .french: L("language_french")
-        case .arabic: L("language_arabic")
-        case .italian: L("language_italian")
-        case .vietnamese: L("language_vietnamese")
-        case .dutch: L("language_dutch")
-        case .turkish: L("language_turkish")
-        case .ukrainian: L("language_ukrainian")
-        case .indonesian: L("language_indonesian")
-        case .polish: L("language_polish")
-        case .persian: L("language_persian")
-        case .thai: L("language_thai")
-        case .catalan: L("language_catalan")
-        case .swedish: L("language_swedish")
-        }
-    }
-}
-
 @MainActor
 struct GeneralPane: View {
     @Bindable var settings: SettingsStore
@@ -71,28 +15,6 @@ struct GeneralPane: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .textCase(.uppercase)
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(alignment: .top, spacing: 12) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(L("language_title"))
-                                    .font(.body)
-                                Text(L("language_subtitle"))
-                                    .font(.footnote)
-                                    .foregroundStyle(.tertiary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            Spacer()
-                            Picker(L("language_title"), selection: self.$settings.appLanguage) {
-                                ForEach(AppLanguage.allCases) { option in
-                                    Text(option.label).tag(option.rawValue)
-                                }
-                            }
-                            .labelsHidden()
-                            .pickerStyle(.menu)
-                            .frame(maxWidth: 200)
-                        }
-                    }
 
                     HStack(alignment: .top, spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {

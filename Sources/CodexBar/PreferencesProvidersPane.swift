@@ -486,7 +486,11 @@ struct ProvidersPane: View {
                     }
                 }
             },
-            showsOrganizationField: provider == .claude,
+            showsOrganizationField: provider == .claude || provider == .devin,
+            organizationHelpText: provider == .devin
+                ? "Optional Devin organization: org/<slug>, organizations/<id>, or an org URL. " +
+                "Auto-imported accounts fill this in themselves."
+                : nil,
             addAccount: { label, token, organizationID in
                 self.settings.addTokenAccount(
                     provider: provider,

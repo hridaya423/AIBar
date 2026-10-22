@@ -20,8 +20,6 @@ public struct OpenAIDashboardFetcher {
     }
 
     private let usageURL = URL(string: "https://chatgpt.com/codex/cloud/settings/analytics#usage")!
-    private nonisolated static let dashboardAcceptLanguage = "en-US,en;q=0.9"
-    private nonisolated static let dashboardUsageAPIURL = URL(string: "https://chatgpt.com/backend-api/wham/usage")!
 
     public init() {}
 
@@ -145,18 +143,6 @@ public struct OpenAIDashboardFetcher {
             hasReturnableData: hasReturnableData)
     }
 
-    struct DashboardAPIData {
-        let primaryLimit: RateWindow?
-        let secondaryLimit: RateWindow?
-        let extraRateWindows: [NamedRateWindow]
-        let creditsRemaining: Double?
-        let accountPlan: String?
-
-        var hasUsageData: Bool {
-            self.primaryLimit != nil || self.secondaryLimit != nil || self.creditsRemaining != nil
-        }
-    }
-
     public struct ProbeResult: Sendable {
         public let href: String?
         public let loginRequired: Bool
@@ -206,6 +192,8 @@ public struct OpenAIDashboardFetcher {
     public func loadLatestDashboard(
         accountEmail: String?,
         cacheScope: CookieHeaderCache.Scope? = nil,
+        previousSnapshot: OpenAIDashboardSnapshot? = nil,
+        allowPageScrape: Bool = true,
         logger: ((String) -> Void)? = nil,
         debugDumpHTML: Bool = false,
         allowNavigationTimeoutRetry: Bool = true,
@@ -214,6 +202,8 @@ public struct OpenAIDashboardFetcher {
         let store = OpenAIDashboardWebsiteDataStore.store(forAccountEmail: accountEmail, scope: cacheScope)
         return try await self.loadLatestDashboard(
             websiteDataStore: store,
+            previousSnapshot: previousSnapshot,
+            allowPageScrape: allowPageScrape,
             logger: logger,
             debugDumpHTML: debugDumpHTML,
             allowNavigationTimeoutRetry: allowNavigationTimeoutRetry,
@@ -222,6 +212,8 @@ public struct OpenAIDashboardFetcher {
 
     public func loadLatestDashboard(
         websiteDataStore: WKWebsiteDataStore,
+        previousSnapshot: OpenAIDashboardSnapshot? = nil,
+        allowPageScrape: Bool = true,
         logger: ((String) -> Void)? = nil,
         debugDumpHTML: Bool = false,
         allowNavigationTimeoutRetry: Bool = true,
@@ -234,6 +226,45 @@ public struct OpenAIDashboardFetcher {
             logger: { logger?($0) })
         try Task.checkCancellation()
         let (apiData, verifiedSignedInEmail) = (preflight.apiData, preflight.verifiedSignedInEmail)
+
+        guard allowPageScrape else {
+            return try Self.snapshotSkippingPageScrape(
+                apiData: apiData,
+                verifiedSignedInEmail: verifiedSignedInEmail,
+                previous: previousSnapshot,
+                logger: logger)
+        }
+
+        return try await self.scrapeDashboardViaWebView(.init(
+            websiteDataStore: websiteDataStore,
+            apiData: apiData,
+            verifiedSignedInEmail: verifiedSignedInEmail,
+            deadline: deadline,
+            logger: logger,
+            debugDumpHTML: debugDumpHTML,
+            allowNavigationTimeoutRetry: allowNavigationTimeoutRetry))
+    }
+
+    private struct DashboardScrapeRequest {
+        let websiteDataStore: WKWebsiteDataStore
+        let apiData: DashboardAPIData?
+        let verifiedSignedInEmail: String?
+        let deadline: Date
+        let logger: ((String) -> Void)?
+        let debugDumpHTML: Bool
+        let allowNavigationTimeoutRetry: Bool
+    }
+
+    private func scrapeDashboardViaWebView(_ request: DashboardScrapeRequest) async throws
+        -> OpenAIDashboardSnapshot
+    {
+        let websiteDataStore = request.websiteDataStore
+        let apiData = request.apiData
+        let verifiedSignedInEmail = request.verifiedSignedInEmail
+        let deadline = request.deadline
+        let logger = request.logger
+        let debugDumpHTML = request.debugDumpHTML
+        let allowNavigationTimeoutRetry = request.allowNavigationTimeoutRetry
         let remainingTimeout = try Self.requiredRemainingTimeout(until: deadline)
 
         let lease = try await self.makeWebView(
@@ -719,164 +750,6 @@ public struct OpenAIDashboardFetcher {
         return request
     }
 
-    nonisolated static func dashboardAPIData(from response: CodexUsageResponse) -> DashboardAPIData {
-        DashboardAPIData(
-            primaryLimit: self.rateWindow(from: response.rateLimit?.primaryWindow),
-            secondaryLimit: self.rateWindow(from: response.rateLimit?.secondaryWindow),
-            extraRateWindows: CodexAdditionalRateLimitMapper.extraRateWindows(
-                from: response.additionalRateLimits),
-            creditsRemaining: response.credits?.balance,
-            accountPlan: response.planType?.rawValue)
-    }
-
-    private static func fetchDashboardAPIPreflight(
-        websiteDataStore: WKWebsiteDataStore,
-        deadline: Date,
-        logger: @escaping (String) -> Void)
-        async throws -> (apiData: DashboardAPIData?, verifiedSignedInEmail: String?)
-    {
-        let cookieHeader = try await self.chatGPTCookieHeader(in: websiteDataStore, deadline: deadline)
-        let apiData = await self.fetchDashboardUsageAPI(
-            cookieHeader: cookieHeader,
-            deadline: deadline,
-            logger: logger)
-        let verifiedEmail: String? = if apiData?.hasUsageData == true {
-            await self.fetchSignedInEmailFromAPI(
-                cookieHeader: cookieHeader,
-                deadline: deadline,
-                logger: logger)
-        } else {
-            nil
-        }
-
-        if apiData?.hasUsageData == true, verifiedEmail != nil {
-            logger("usage api supplied verified dashboard data; continuing WebView scrape")
-        }
-        return (apiData, verifiedEmail)
-    }
-
-    private static func fetchDashboardUsageAPI(
-        websiteDataStore: WKWebsiteDataStore,
-        logger: @escaping (String) -> Void) async -> DashboardAPIData?
-    {
-        guard let cookieHeader = try? await self.chatGPTCookieHeader(in: websiteDataStore, deadline: nil) else {
-            return nil
-        }
-        return await self.fetchDashboardUsageAPI(cookieHeader: cookieHeader, deadline: nil, logger: logger)
-    }
-
-    private static func fetchDashboardUsageAPI(
-        cookieHeader: String,
-        deadline: Date?,
-        logger: @escaping (String) -> Void) async -> DashboardAPIData?
-    {
-        guard !cookieHeader.isEmpty else { return nil }
-        let remaining = deadline.map { self.remainingTimeout(until: $0) } ?? 4
-        guard remaining > 0 else { return nil }
-
-        do {
-            let (data, response) = try await ProviderHTTPClient.shared.data(
-                for: self.dashboardUsageAPIRequest(cookieHeader: cookieHeader, timeout: min(4, remaining)))
-            let status = (response as? HTTPURLResponse)?.statusCode ?? -1
-            logger("usage api status=\(status)")
-            guard status >= 200, status < 300 else { return nil }
-            let decoded = try JSONDecoder().decode(CodexUsageResponse.self, from: data)
-            let result = self.dashboardAPIData(from: decoded)
-            if result.hasUsageData {
-                logger("usage api supplied language-independent rate/credit data")
-            }
-            return result
-        } catch {
-            logger("usage api unavailable: \(error.localizedDescription)")
-            return nil
-        }
-    }
-
-    private static func fetchSignedInEmailFromAPI(
-        cookieHeader: String,
-        deadline: Date?,
-        logger: @escaping (String) -> Void) async -> String?
-    {
-        guard !cookieHeader.isEmpty else { return nil }
-
-        let endpoints = [
-            URL(string: "https://chatgpt.com/backend-api/me"),
-            URL(string: "https://chatgpt.com/api/auth/session"),
-        ].compactMap(\.self)
-
-        for url in endpoints {
-            let remaining = deadline.map { self.remainingTimeout(until: $0) } ?? 2
-            guard remaining > 0 else { return nil }
-            do {
-                let (data, response) = try await ProviderHTTPClient.shared.data(
-                    for: self.dashboardIdentityAPIRequest(
-                        url: url,
-                        cookieHeader: cookieHeader,
-                        timeout: min(2, remaining)))
-                let status = (response as? HTTPURLResponse)?.statusCode ?? -1
-                logger("identity api \(url.path) status=\(status)")
-                guard status >= 200, status < 300 else { continue }
-                if let email = self.findFirstEmail(inJSONData: data) {
-                    return email.trimmingCharacters(in: .whitespacesAndNewlines)
-                }
-            } catch {
-                logger("identity api \(url.path) unavailable: \(error.localizedDescription)")
-            }
-        }
-
-        return nil
-    }
-
-    private static func chatGPTCookieHeader(in store: WKWebsiteDataStore, deadline: Date?) async throws -> String {
-        let cookies = try await OpenAIDashboardBrowserCookieImporter.runBoundedValueCallback(
-            deadline: deadline)
-        { completion in
-            store.httpCookieStore.getAllCookies(completion)
-        }
-
-        return cookies
-            .filter { $0.domain.lowercased().contains("chatgpt.com") }
-            .map { "\($0.name)=\($0.value)" }
-            .joined(separator: "; ")
-    }
-
-    nonisolated static func findFirstEmail(inJSONData data: Data) -> String? {
-        guard let json = try? JSONSerialization.jsonObject(with: data, options: []) else { return nil }
-        var queue: [Any] = [json]
-        var seen = 0
-        while !queue.isEmpty, seen < 2000 {
-            let current = queue.removeFirst()
-            seen += 1
-            if let string = current as? String, string.contains("@") {
-                return string
-            }
-            if let dictionary = current as? [String: Any] {
-                for (key, value) in dictionary {
-                    if key.lowercased() == "email",
-                       let string = value as? String,
-                       string.contains("@")
-                    {
-                        return string
-                    }
-                    queue.append(value)
-                }
-            } else if let array = current as? [Any] {
-                queue.append(contentsOf: array)
-            }
-        }
-        return nil
-    }
-
-    private nonisolated static func rateWindow(from window: CodexUsageResponse.WindowSnapshot?) -> RateWindow? {
-        guard let window else { return nil }
-        let resetDate = Date(timeIntervalSince1970: TimeInterval(window.resetAt))
-        return RateWindow(
-            usedPercent: Double(window.usedPercent),
-            windowMinutes: window.limitWindowSeconds / 60,
-            resetsAt: resetDate,
-            resetDescription: UsageFormatter.resetDescription(from: resetDate))
-    }
-
     private nonisolated static func firstNonEmpty(_ candidates: String?...) -> String? {
         for candidate in candidates {
             let trimmed = candidate?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1005,35 +878,6 @@ extension OpenAIDashboardFetcher {
         return remaining
     }
 
-    nonisolated static func dashboardUsageAPIRequest(
-        cookieHeader: String,
-        timeout: TimeInterval = 4) -> URLRequest
-    {
-        var request = URLRequest(url: Self.dashboardUsageAPIURL)
-        request.httpMethod = "GET"
-        request.timeoutInterval = timeout
-        request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue(Self.dashboardAcceptLanguage, forHTTPHeaderField: "Accept-Language")
-        request.setValue("CodexBar", forHTTPHeaderField: "User-Agent")
-        return request
-    }
-
-    nonisolated static func dashboardIdentityAPIRequest(
-        url: URL,
-        cookieHeader: String,
-        timeout: TimeInterval = 2) -> URLRequest
-    {
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.timeoutInterval = timeout
-        request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue(Self.dashboardAcceptLanguage, forHTTPHeaderField: "Accept-Language")
-        request.setValue("CodexBar", forHTTPHeaderField: "User-Agent")
-        return request
-    }
-
     private static func logBlockingStateIfNeeded(_ scrape: ScrapeResult, logger: (String) -> Void) {
         guard scrape.loginRequired || scrape.cloudflareInterstitial else { return }
         let route = self.isUsageRoute(scrape.href) ? "usage" : "other"
@@ -1082,6 +926,8 @@ public struct OpenAIDashboardFetcher {
     public func loadLatestDashboard(
         accountEmail _: String?,
         cacheScope _: CookieHeaderCache.Scope? = nil,
+        previousSnapshot _: OpenAIDashboardSnapshot? = nil,
+        allowPageScrape _: Bool = true,
         logger _: ((String) -> Void)? = nil,
         debugDumpHTML _: Bool = false,
         allowNavigationTimeoutRetry _: Bool = true,

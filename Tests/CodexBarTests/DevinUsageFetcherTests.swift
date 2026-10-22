@@ -56,6 +56,8 @@ struct DevinUsageFetcherTests {
     @Test
     func `keeps weekly quota when current plan hides daily quota`() throws {
         let response: [String: Any] = [
+            "daily_percentage": 0,
+            "daily_reset_at": "2026-06-11T00:00:00-08:00",
             "weekly_percentage": 25,
             "weekly_reset_at": "2026-06-14T00:00:00-08:00",
             "hide_daily_quota": true,
@@ -65,6 +67,45 @@ struct DevinUsageFetcherTests {
 
         #expect(usage.primary == nil)
         #expect(usage.secondary?.usedPercent == 25)
+    }
+
+    @Test
+    func `treats percentage of one as one percent`() throws {
+        let response: [String: Any] = [
+            "daily_percentage": 1,
+            "weekly_percentage": 1.0,
+        ]
+
+        let snapshot = try DevinUsageParser.parse(response, organization: nil, now: Self.now)
+
+        #expect(snapshot.daily?.usedPercent == 1)
+        #expect(snapshot.weekly?.usedPercent == 1)
+    }
+
+    @Test
+    func `parses nonnegative overage balance into provider cost`() throws {
+        let response: [String: Any] = [
+            "weekly_percentage": 67,
+            "overage_balance": 12.5,
+        ]
+
+        let usage = try DevinUsageParser.parse(response, organization: nil, now: Self.now).toUsageSnapshot()
+
+        #expect(usage.providerCost?.used == 12.5)
+        #expect(usage.providerCost?.currencyCode == "USD")
+        #expect(usage.providerCost?.period == "Extra usage balance")
+    }
+
+    @Test
+    func `ignores negative overage balance`() throws {
+        let response: [String: Any] = [
+            "weekly_percentage": 67,
+            "overage_balance": -0.042818,
+        ]
+
+        let usage = try DevinUsageParser.parse(response, organization: nil, now: Self.now).toUsageSnapshot()
+
+        #expect(usage.providerCost == nil)
     }
 
     @Test
@@ -206,6 +247,7 @@ struct DevinUsageFetcherTests {
                 accessToken: "auth1_abcdefghijklmnopqrstuvwxyz0123456789",
                 organization: "org/example-org",
                 internalOrganizationID: "org_GQ6LhcfkW1TSinM6",
+                userID: "github|123",
                 sourceLabel: "Chrome Default")
         }
         let stub = ProviderHTTPTransportStub { request in
@@ -300,6 +342,35 @@ struct DevinUsageFetcherTests {
     }
 
     @Test
+    func `session importer resolves organization for the session's own user`() {
+        // A stale second login leaves org keys for another user in the same localStorage.
+        // Picking them makes the app fetch that org's empty quota (Daily 100%/Weekly 100%).
+        let staleUser = "user-bbbb2222bbbb2222"
+        let sessionUser = "user-aaaa1111aaaa1111"
+        let staleOrg = "org_bbbbbbbbbbbbbbbb"
+        let sessionOrg = "org_aaaaaaaaaaaaaaaa"
+        let storage = [
+            "_https://app.devin.ai\u{0000}\u{0001}auth1_session":
+                #"{"token":"auth1_abcdefghijklmnopqrstuvwxyz0123456789","userId":"\#(sessionUser)"}"#,
+            "_https://app.devin.ai\u{0000}\u{0001}post-auth-v3-null-\(staleUser)-org_name-stale-org":
+                #"{"internalOrgId":"\#(staleOrg)","orgName":"stale-org"}"#,
+            "_https://app.devin.ai\u{0000}\u{0001}post-auth-v3-null-\(sessionUser)-org_name-our-org":
+                #"{"internalOrgId":"\#(sessionOrg)","orgName":"our-org"}"#,
+            "_https://app.devin.ai\u{0000}\u{0001}feature-flags-cache:\(staleUser):\(staleOrg)": "{}",
+        ]
+
+        let info = DevinSessionImporter.organizationInfo(
+            from: storage,
+            organizationOverride: nil,
+            userID: sessionUser)
+        #expect(info.organization == "org/our-org")
+        #expect(info.internalOrganizationID == sessionOrg)
+
+        let session = DevinSessionImporter.session(from: storage, sourceLabel: "Helium Profile 3")
+        #expect(session?.internalOrganizationID == sessionOrg)
+    }
+
+    @Test
     func `session importer falls back to internal organization id`() {
         let result = DevinSessionImporter.organizationInfo(
             from: [
@@ -334,11 +405,13 @@ struct DevinUsageFetcherTests {
                 accessToken: "auth1_abcdefghijklmnopqrstuvwxyz0123456789",
                 organization: nil,
                 internalOrganizationID: nil,
+                userID: nil,
                 sourceLabel: "Chrome Default"),
             DevinSessionImporter.SessionInfo(
                 accessToken: "auth1_abcdefghijklmnopqrstuvwxyz0123456789",
                 organization: "org/example",
                 internalOrganizationID: "org_GQ6LhcfkW1TSinM6",
+                userID: "github|123",
                 sourceLabel: "Chrome Profile 1"),
         ]
 
@@ -356,11 +429,13 @@ struct DevinUsageFetcherTests {
             accessToken: "auth1_incomplete",
             organization: nil,
             internalOrganizationID: nil,
+            userID: nil,
             sourceLabel: "Chrome Default")
         let complete = DevinSessionImporter.SessionInfo(
             accessToken: "auth1_complete",
             organization: "org/example",
             internalOrganizationID: "org_GQ6LhcfkW1TSinM6",
+            userID: "github|123",
             sourceLabel: "Chrome Profile 1")
 
         let ranked = DevinSessionImporter.rankSessions([incomplete, complete])
@@ -375,7 +450,273 @@ struct DevinUsageFetcherTests {
     }
 
     @Test
-    func `automatic local storage import does not fall back beyond Chrome`() throws {
+    func `session importer exposes user id`() throws {
+        let accessToken = "auth1_abcdefghijklmnopqrstuvwxyz0123456789"
+        let storage = [
+            "_https://app.devin.ai\u{0000}\u{0001}auth1_session":
+                #"{"token":"\#(accessToken)","userId":"github|123"}"#,
+            "_https://app.devin.ai\u{0000}\u{0001}last-internal-org-for-external-org-v1-example-org":
+                "\"org_GQ6LhcfkW1TSinM6\"",
+        ]
+
+        let session = try #require(DevinSessionImporter.session(
+            from: storage,
+            sourceLabel: "Chrome Default"))
+
+        #expect(session.userID == "github|123")
+    }
+
+    @Test
+    func `session identity prefers internal organization id for external identifier`() {
+        let session = DevinSessionImporter.SessionInfo(
+            accessToken: "auth1_abcdefghijklmnopqrstuvwxyz0123456789",
+            organization: "org/example",
+            internalOrganizationID: "org_abc12345",
+            userID: "github|1",
+            sourceLabel: "Chrome Profile 1")
+
+        #expect(DevinSessionIdentity.externalIdentifier(for: session) == "devin:org:org_abc12345")
+        #expect(DevinSessionIdentity.organizationID(for: session) == "organizations/org_abc12345")
+    }
+
+    @Test
+    func `session identity falls back through organization user and token`() {
+        let orgOnly = DevinSessionImporter.SessionInfo(
+            accessToken: "auth1_abcdefghijklmnopqrstuvwxyz0123456789",
+            organization: "org/example",
+            internalOrganizationID: nil,
+            userID: "github|1",
+            sourceLabel: "Chrome Default")
+        let userOnly = DevinSessionImporter.SessionInfo(
+            accessToken: "auth1_abcdefghijklmnopqrstuvwxyz0123456789",
+            organization: nil,
+            internalOrganizationID: nil,
+            userID: "github|1",
+            sourceLabel: "Chrome Default")
+        let tokenOnly = DevinSessionImporter.SessionInfo(
+            accessToken: "auth1_abcdefghijklmnopqrstuvwxyz0123456789",
+            organization: nil,
+            internalOrganizationID: nil,
+            userID: nil,
+            sourceLabel: "Chrome Default")
+
+        #expect(DevinSessionIdentity.externalIdentifier(for: orgOnly) == "devin:org:org/example")
+        #expect(DevinSessionIdentity.organizationID(for: orgOnly) == "org/example")
+        #expect(DevinSessionIdentity.externalIdentifier(for: userOnly) == "devin:user:github|1")
+        #expect(DevinSessionIdentity.externalIdentifier(for: tokenOnly).hasPrefix("devin:tok:"))
+        #expect(DevinSessionIdentity.organizationID(for: userOnly) == nil)
+    }
+
+    @Test
+    func `session identity matches normalized organization`() {
+        let session = DevinSessionImporter.SessionInfo(
+            accessToken: "auth1_abcdefghijklmnopqrstuvwxyz0123456789",
+            organization: "org/example",
+            internalOrganizationID: "org_abc12345",
+            userID: "github|1",
+            sourceLabel: "Chrome Default")
+
+        #expect(DevinSessionIdentity.matches(session: session, normalizedOrganization: "org/example"))
+        #expect(DevinSessionIdentity.matches(session: session, normalizedOrganization: "organizations/org_abc12345"))
+        #expect(DevinSessionIdentity.matches(session: session, normalizedOrganization: nil))
+        #expect(!DevinSessionIdentity.matches(session: session, normalizedOrganization: "org/other"))
+    }
+
+    @Test
+    func `invalid credentials self-heals selected account token from matching session`() async throws {
+        defer { DevinSessionImporter.importSessionOverrideForTesting = nil }
+        let recorder = DevinRequestRecorder()
+        let tokenRecorder = DevinTokenUpdateRecorder()
+        let accountID = UUID()
+        try await self.withDevinStub {
+            DevinSessionImporter.importSessionOverrideForTesting = { _, _, _ in
+                DevinSessionImporter.SessionInfo(
+                    accessToken: "fresh-token",
+                    organization: "org/example-org",
+                    internalOrganizationID: "org_abc12345",
+                    userID: "github|1",
+                    sourceLabel: "Chrome Profile 1")
+            }
+            DevinStubURLProtocol.handler = { request in
+                let call = recorder.record()
+                let expected = call == 1 ? "Bearer stale-token" : "Bearer fresh-token"
+                #expect(request.value(forHTTPHeaderField: "Authorization") == expected)
+                let status = call == 1 ? 401 : 200
+                let body = status == 200 ? #"{"daily_percentage":0,"weekly_percentage":0}"# : "{}"
+                return Self.devinResponse(for: request, statusCode: status, body: body)
+            }
+            let context = self.makeContext(
+                organization: "org/example-org",
+                env: ["DEVIN_BEARER_TOKEN": "stale-token"],
+                selectedTokenAccountID: accountID,
+                tokenUpdater: { _, id, token in
+                    #expect(id == accountID)
+                    await tokenRecorder.record(token)
+                })
+
+            let result = try await DevinWebFetchStrategy().fetch(context)
+
+            #expect(result.usage.secondary?.usedPercent == 0)
+            #expect(await tokenRecorder.recordedToken() == "fresh-token")
+            #expect(recorder.callCount == 2)
+        }
+    }
+
+    @Test
+    func `invalid credentials does not heal when session org mismatches`() async throws {
+        defer { DevinSessionImporter.importSessionOverrideForTesting = nil }
+        let recorder = DevinRequestRecorder()
+        let tokenRecorder = DevinTokenUpdateRecorder()
+        try await self.withDevinStub {
+            DevinSessionImporter.importSessionOverrideForTesting = { _, _, _ in
+                DevinSessionImporter.SessionInfo(
+                    accessToken: "fresh-token",
+                    organization: "org/other-org",
+                    internalOrganizationID: "org_zzz99999",
+                    userID: "github|1",
+                    sourceLabel: "Chrome Profile 1")
+            }
+            DevinStubURLProtocol.handler = { request in
+                _ = recorder.record()
+                return Self.devinResponse(for: request, statusCode: 401, body: "{}")
+            }
+            let context = self.makeContext(
+                organization: "org/example-org",
+                env: ["DEVIN_BEARER_TOKEN": "stale-token"],
+                selectedTokenAccountID: UUID(),
+                tokenUpdater: { _, _, token in await tokenRecorder.record(token) })
+
+            do {
+                _ = try await DevinWebFetchStrategy().fetch(context)
+                Issue.record("Expected invalidCredentials")
+            } catch DevinUsageError.invalidCredentials {
+                // expected
+            } catch {
+                Issue.record("Expected invalidCredentials, got \(error)")
+            }
+
+            #expect(await tokenRecorder.recordedToken() == nil)
+            #expect(recorder.callCount == 1)
+        }
+    }
+
+    @Test
+    func `invalid credentials does not heal without a selected account`() async throws {
+        defer { DevinSessionImporter.importSessionOverrideForTesting = nil }
+        let recorder = DevinRequestRecorder()
+        try await self.withDevinStub {
+            DevinSessionImporter.importSessionOverrideForTesting = { _, _, _ in
+                DevinSessionImporter.SessionInfo(
+                    accessToken: "fresh-token",
+                    organization: "org/example-org",
+                    internalOrganizationID: "org_abc12345",
+                    userID: "github|1",
+                    sourceLabel: "Chrome Default")
+            }
+            DevinStubURLProtocol.handler = { request in
+                _ = recorder.record()
+                return Self.devinResponse(for: request, statusCode: 401, body: "{}")
+            }
+            let context = self.makeContext(
+                cookieSource: .manual,
+                organization: "org/example-org",
+                env: ["DEVIN_BEARER_TOKEN": "stale-token"],
+                selectedTokenAccountID: nil,
+                tokenUpdater: nil)
+
+            do {
+                _ = try await DevinWebFetchStrategy().fetch(context)
+                Issue.record("Expected invalidCredentials")
+            } catch DevinUsageError.invalidCredentials {
+                // expected
+            } catch {
+                Issue.record("Expected invalidCredentials, got \(error)")
+            }
+
+            #expect(recorder.callCount == 1)
+        }
+    }
+
+    @Test
+    func `selected account env token wins over configured manual token`() async throws {
+        let recorder = DevinRequestRecorder()
+        try await self.withDevinStub {
+            DevinStubURLProtocol.handler = { request in
+                _ = recorder.record()
+                #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer account-token")
+                return Self.devinResponse(
+                    for: request,
+                    statusCode: 200,
+                    body: #"{"daily_percentage":0,"weekly_percentage":0}"#)
+            }
+            let context = self.makeContext(
+                cookieSource: .manual,
+                manualBearerToken: "configured-token",
+                organization: "org/example-org",
+                env: ["DEVIN_BEARER_TOKEN": "account-token"],
+                selectedTokenAccountID: UUID(),
+                tokenUpdater: nil)
+
+            _ = try await DevinWebFetchStrategy().fetch(context)
+
+            #expect(recorder.callCount == 1)
+        }
+    }
+
+    private func makeContext(
+        cookieSource: ProviderCookieSource = .auto,
+        manualBearerToken: String? = nil,
+        organization: String? = nil,
+        env: [String: String] = [:],
+        selectedTokenAccountID: UUID? = nil,
+        tokenUpdater: ProviderFetchContext.TokenAccountTokenUpdater? = nil) -> ProviderFetchContext
+    {
+        ProviderFetchContext(
+            runtime: .app,
+            sourceMode: .auto,
+            includeCredits: false,
+            webTimeout: 5,
+            webDebugDumpHTML: false,
+            verbose: false,
+            env: env,
+            settings: ProviderSettingsSnapshot.make(
+                devin: ProviderSettingsSnapshot.DevinProviderSettings(
+                    cookieSource: cookieSource,
+                    manualBearerToken: manualBearerToken,
+                    organization: organization)),
+            fetcher: UsageFetcher(environment: [:]),
+            claudeFetcher: DevinStubClaudeFetcher(),
+            browserDetection: BrowserDetection(cacheTTL: 0),
+            selectedTokenAccountID: selectedTokenAccountID,
+            tokenAccountTokenUpdater: tokenUpdater)
+    }
+
+    private func withDevinStub(_ body: () async throws -> Void) async throws {
+        let registered = URLProtocol.registerClass(DevinStubURLProtocol.self)
+        defer {
+            if registered {
+                URLProtocol.unregisterClass(DevinStubURLProtocol.self)
+            }
+            DevinStubURLProtocol.handler = nil
+        }
+        try await body()
+    }
+
+    private static func devinResponse(
+        for request: URLRequest,
+        statusCode: Int,
+        body: String) -> (HTTPURLResponse, Data)
+    {
+        let response = HTTPURLResponse(
+            url: request.url!,
+            statusCode: statusCode,
+            httpVersion: nil,
+            headerFields: ["Content-Type": "application/json"])!
+        return (response, Data(body.utf8))
+    }
+
+    @Test
+    func `automatic local storage import scans non-Chrome Chromium browsers`() throws {
         let temp = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: temp) }
 
@@ -386,7 +727,84 @@ struct DevinUsageFetcherTests {
 
         #expect(detection.hasUsableProfileData(.brave))
         #expect(!detection.hasUsableProfileData(.chrome))
-        #expect(DevinSessionImporter.localStorageBrowsers(browserDetection: detection).isEmpty)
+        #expect(DevinSessionImporter.localStorageBrowsers(browserDetection: detection) == [.brave])
     }
     #endif
 }
+
+#if os(macOS)
+private actor DevinTokenUpdateRecorder {
+    private var token: String?
+
+    func record(_ token: String) {
+        self.token = token
+    }
+
+    func recordedToken() -> String? {
+        self.token
+    }
+}
+
+private final class DevinRequestRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var calls = 0
+
+    var callCount: Int {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        return self.calls
+    }
+
+    @discardableResult
+    func record() -> Int {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        self.calls += 1
+        return self.calls
+    }
+}
+
+private final class DevinStubURLProtocol: URLProtocol {
+    nonisolated(unsafe) static var handler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))?
+
+    override static func canInit(with request: URLRequest) -> Bool {
+        request.url?.host == "app.devin.ai"
+    }
+
+    override static func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
+
+    override func startLoading() {
+        guard let handler = Self.handler else {
+            self.client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
+            return
+        }
+
+        do {
+            let (response, data) = try handler(self.request)
+            self.client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            self.client?.urlProtocol(self, didLoad: data)
+            self.client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            self.client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
+}
+
+private struct DevinStubClaudeFetcher: ClaudeUsageFetching {
+    func loadLatestUsage(model _: String) async throws -> ClaudeUsageSnapshot {
+        throw ClaudeUsageError.parseFailed("stub")
+    }
+
+    func debugRawProbe(model _: String) async -> String {
+        "stub"
+    }
+
+    func detectVersion() -> String? {
+        nil
+    }
+}
+#endif

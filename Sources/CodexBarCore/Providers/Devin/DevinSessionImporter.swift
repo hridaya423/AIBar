@@ -4,18 +4,19 @@ import SweetCookieKit
 #endif
 
 #if os(macOS)
-enum DevinSessionImporter {
+public enum DevinSessionImporter {
     nonisolated(unsafe) static var importSessionOverrideForTesting:
         ((BrowserDetection, String?, ((String) -> Void)?) -> SessionInfo?)?
 
     private static let storageOrigin = "https://app.devin.ai"
     private static let externalOrgPrefix = "last-internal-org-for-external-org-v1-"
 
-    struct SessionInfo: Equatable {
-        let accessToken: String
-        let organization: String?
-        let internalOrganizationID: String?
-        let sourceLabel: String
+    public struct SessionInfo: Equatable, Sendable {
+        public let accessToken: String
+        public let organization: String?
+        public let internalOrganizationID: String?
+        public let userID: String?
+        public let sourceLabel: String
     }
 
     struct LocalStorageCandidate {
@@ -39,7 +40,7 @@ enum DevinSessionImporter {
         return sessions.first
     }
 
-    static func importSessions(
+    public static func importSessions(
         browserDetection: BrowserDetection,
         organizationOverride: String? = nil,
         logger: ((String) -> Void)? = nil) -> [SessionInfo]
@@ -86,11 +87,16 @@ enum DevinSessionImporter {
         guard let accessToken = self.accessToken(from: storage) else {
             return nil
         }
-        let organizationInfo = self.organizationInfo(from: storage, organizationOverride: organizationOverride)
+        let userID = self.sessionUserID(from: storage)
+        let organizationInfo = self.organizationInfo(
+            from: storage,
+            organizationOverride: organizationOverride,
+            userID: userID)
         return SessionInfo(
             accessToken: accessToken,
             organization: organizationInfo.organization,
             internalOrganizationID: organizationInfo.internalOrganizationID,
+            userID: userID,
             sourceLabel: sourceLabel)
     }
 
@@ -122,6 +128,21 @@ enum DevinSessionImporter {
             return token
         }
 
+        return nil
+    }
+
+    /// userId embedded in the auth1_session JSON — org inference must stay scoped to the
+    /// token's owner, otherwise a stale second login's org keys can be picked at random.
+    static func sessionUserID(from storage: [String: String]) -> String? {
+        for (key, value) in storage where self.isAuth1StorageKey(key) {
+            guard let json = self.jsonObject(from: value) as? [String: Any],
+                  let userID = json["userId"] as? String,
+                  !userID.isEmpty
+            else {
+                continue
+            }
+            return userID
+        }
         return nil
     }
 
@@ -157,7 +178,8 @@ enum DevinSessionImporter {
 
     static func organizationInfo(
         from storage: [String: String],
-        organizationOverride: String?) -> (organization: String?, internalOrganizationID: String?)
+        organizationOverride: String?,
+        userID: String? = nil) -> (organization: String?, internalOrganizationID: String?)
     {
         let override = DevinUsageFetcher.normalizedOrganization(organizationOverride)
         let overrideSlug = override.flatMap(self.slug(fromNormalizedOrganization:))
@@ -177,7 +199,7 @@ enum DevinSessionImporter {
             }
         }
 
-        if let inferred = self.inferredOrganizationInfo(from: storage, override: override) {
+        if let inferred = self.inferredOrganizationInfo(from: storage, override: override, userID: userID) {
             return inferred
         }
 
@@ -335,7 +357,8 @@ enum DevinSessionImporter {
 
     private static func inferredOrganizationInfo(
         from storage: [String: String],
-        override: String?) -> (organization: String?, internalOrganizationID: String?)?
+        override: String?,
+        userID: String?) -> (organization: String?, internalOrganizationID: String?)?
     {
         let overrideSlug = override.flatMap(self.slug(fromNormalizedOrganization:))
         let overrideOrgID = override.flatMap(self.orgID(fromNormalizedOrganization:))
@@ -343,6 +366,11 @@ enum DevinSessionImporter {
         var fallbackInternalOrgID: String?
 
         for (key, value) in storage {
+            // Org metadata keys are namespaced by user (post-auth-v3-…-user-<id>-…,
+            // feature-flags-cache:user-<id>:<org>, known-org-ids-user-<id>). A stale
+            // second login leaves keys for another user whose org this token cannot
+            // charge against — skip them so resolution stays deterministic.
+            if let userID, key.contains("user-"), !key.contains(userID) { continue }
             let object = self.jsonObject(from: value)
             let internalOrgID = self.cleanedOrgID(self.firstString(
                 in: object,

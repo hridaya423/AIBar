@@ -160,6 +160,12 @@ extension UsageStore {
             await MainActor.run { self.kiloScopeSnapshots = [] }
         }
 
+        if provider == .devin {
+            await DevinAccountSync.syncFromBrowserSessions(
+                settings: self.settings,
+                browserDetection: self.browserDetection)
+        }
+
         let tokenAccounts = self.tokenAccounts(for: provider)
         if self.shouldFetchAllTokenAccounts(provider: provider, accounts: tokenAccounts) {
             await self.refreshTokenAccounts(

@@ -118,17 +118,6 @@ final class OpenAIDashboardWebViewCache {
     #endif
     /// Reuse the validated analytics page only for the immediate next handoff.
     private let preservedPageHandoffTimeout: TimeInterval = 5
-    private let blankURL = URL(string: "about:blank")!
-    private let idlePageClearScript = """
-    (() => {
-      try {
-        document.documentElement.innerHTML = '';
-        return true;
-      } catch {
-        return false;
-      }
-    })();
-    """
     private let reusablePageResetScript = """
     (() => {
       try {
@@ -172,29 +161,29 @@ final class OpenAIDashboardWebViewCache {
     }
 
     private func releaseCachedEntry(_ entry: Entry, preserveLoadedPage: Bool) {
+        guard self.entries.contains(where: { $0.value === entry }) else {
+            entry.host.close()
+            return
+        }
         entry.isBusy = false
-        let now = Date()
-        entry.lastUsedAt = now
-        self.updatePreservedPageState(for: entry, preserveLoadedPage: preserveLoadedPage)
-        self.prepareCachedWebViewForIdle(
-            entry.webView,
-            host: entry.host,
-            preserveLoadedPage: preserveLoadedPage)
-        self.prune(now: now)
-        self.scheduleNextIdlePrune(now: now)
+        entry.lastUsedAt = Date()
+        if preserveLoadedPage {
+            self.updatePreservedPageState(for: entry, preserveLoadedPage: true)
+            entry.host.hide()
+            self.scheduleNextIdlePrune()
+            return
+        }
+        self.evictEntry(entry)
     }
 
-    private func releaseNewEntry(_ entry: Entry, webView: WKWebView, preserveLoadedPage: Bool) {
-        entry.isBusy = false
-        let now = Date()
-        entry.lastUsedAt = now
-        self.updatePreservedPageState(for: entry, preserveLoadedPage: preserveLoadedPage)
-        self.prepareCachedWebViewForIdle(
-            webView,
-            host: entry.host,
-            preserveLoadedPage: preserveLoadedPage)
-        self.prune(now: now)
-        self.scheduleNextIdlePrune(now: now)
+    private func evictEntry(_ entry: Entry) {
+        entry.clearPreservedPage()
+        entry.host.close()
+        if let key = self.entries.first(where: { $0.value === entry })?.key {
+            self.entries.removeValue(forKey: key)
+        }
+        Self.log.debug("OpenAI webview evicted after release")
+        self.scheduleNextIdlePrune()
     }
 
     // MARK: - Testing support
@@ -440,9 +429,8 @@ final class OpenAIDashboardWebViewCache {
             },
             release: { [weak self, weak entry] in
                 guard let self, let entry else { return }
-                self.releaseNewEntry(
+                self.releaseCachedEntry(
                     entry,
-                    webView: webView,
                     preserveLoadedPage: releaseState.preserveLoadedPageOnRelease)
             })
     }
@@ -482,26 +470,6 @@ final class OpenAIDashboardWebViewCache {
         }
         Self.log.debug("OpenAI idle webviews evicted", metadata: ["count": "\(idleEntries.count)"])
         self.scheduleNextIdlePrune()
-    }
-
-    private func prepareCachedWebViewForIdle(
-        _ webView: WKWebView,
-        host: OffscreenWebViewHost,
-        preserveLoadedPage: Bool)
-    {
-        webView.navigationDelegate = nil
-        webView.codexNavigationDelegate = nil
-        if preserveLoadedPage {
-            host.hide()
-            return
-        }
-
-        // Detach the heavyweight ChatGPT SPA as soon as a scrape completes. Keeping the WebView object around
-        // still helps with immediate reuse, but letting chatgpt.com remain the active document is too expensive.
-        webView.stopLoading()
-        webView.evaluateJavaScript(self.idlePageClearScript, completionHandler: nil)
-        _ = webView.load(URLRequest(url: self.blankURL))
-        host.hide()
     }
 
     /// Schedule against the oldest idle entry so later releases cannot postpone its eviction.
@@ -545,22 +513,20 @@ final class OpenAIDashboardWebViewCache {
     }
 
     private func prune(now: Date) {
-        for entry in self.entries.values where !entry.isBusy && entry.hasExpiredPreservedPage(now: now) {
-            entry.clearPreservedPage()
-            self.prepareCachedWebViewForIdle(
-                entry.webView,
-                host: entry.host,
-                preserveLoadedPage: false)
+        let expiredPreserved = self.entries.values.filter { entry in
+            !entry.isBusy && entry.hasExpiredPreservedPage(now: now)
+        }
+        for entry in expiredPreserved {
             Self.log.debug("OpenAI webview preserved page expired")
+            self.evictEntry(entry)
         }
 
         let expired = self.entries.filter { _, entry in
             !entry.isBusy && now.timeIntervalSince(entry.lastUsedAt) >= self.idleTimeout
         }
-        for (key, entry) in expired {
-            entry.host.close()
-            self.entries.removeValue(forKey: key)
+        for (_, entry) in expired {
             Self.log.debug("OpenAI webview pruned")
+            self.evictEntry(entry)
         }
     }
 
@@ -697,13 +663,8 @@ final class OpenAIDashboardWebViewCache {
             return
         }
 
-        entry.clearPreservedPage()
-        self.prepareCachedWebViewForIdle(
-            entry.webView,
-            host: entry.host,
-            preserveLoadedPage: false)
         Self.log.debug("OpenAI webview preserved page expired")
-        self.prune(now: Date())
+        self.evictEntry(entry)
     }
 
     private func resetReusablePageState(_ webView: WKWebView) async -> Bool {

@@ -35,12 +35,12 @@ struct DevinProviderImplementation: ProviderImplementation {
             })
         let cookieOptions = ProviderCookieSourceUI.options(
             allowsOff: false,
-            keychainDisabled: context.settings.debugDisableKeychainAccess)
+            keychainDisabled: context.settings.keychainDisabled(for: context.provider))
         let subtitle: () -> String? = {
             ProviderCookieSourceUI.subtitle(
                 source: context.settings.devinCookieSource,
-                keychainDisabled: context.settings.debugDisableKeychainAccess,
-                auto: "Automatically imports the app.devin.ai session from Chrome.",
+                keychainDisabled: context.settings.keychainDisabled(for: context.provider),
+                auto: "Automatically imports app.devin.ai sessions from your Chrome profiles.",
                 manual: "Paste an Authorization Bearer token from app.devin.ai.",
                 off: "Paste an Authorization Bearer token from app.devin.ai.")
         }
@@ -49,7 +49,7 @@ struct DevinProviderImplementation: ProviderImplementation {
             ProviderSettingsPickerDescriptor(
                 id: "devin-cookie-source",
                 title: "Auth source",
-                subtitle: "Automatically imports the app.devin.ai session from Chrome.",
+                subtitle: "Automatically imports app.devin.ai sessions from your Chrome profiles.",
                 dynamicSubtitle: subtitle,
                 binding: cookieBinding,
                 options: cookieOptions,

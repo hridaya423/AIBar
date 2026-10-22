@@ -45,6 +45,13 @@ struct DisplayPane: View {
                         title: L("menu_bar_shows_percent_title"),
                         subtitle: L("menu_bar_shows_percent_subtitle"),
                         binding: self.$settings.menuBarShowsBrandIconWithPercent)
+                    PreferenceToggleRow(
+                        title: L("merged_shows_all_providers_title"),
+                        subtitle: L("merged_shows_all_providers_subtitle"),
+                        binding: self.$settings.menuBarMergedShowsAllProviders)
+                        .disabled(!self.settings.mergeIcons || !self.settings.menuBarShowsBrandIconWithPercent)
+                        .opacity(
+                            self.settings.mergeIcons && self.settings.menuBarShowsBrandIconWithPercent ? 1 : 0.5)
                     HStack(alignment: .top, spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(L("display_mode_title"))

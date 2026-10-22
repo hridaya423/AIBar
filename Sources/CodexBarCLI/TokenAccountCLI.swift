@@ -145,41 +145,24 @@ struct TokenAccountCLIContext {
         account: ProviderTokenAccount?,
         config: ProviderConfig?) -> ProviderSettingsSnapshot?
     {
+        if let special = self.makeCustomCookieBackedSnapshot(
+            provider: provider,
+            account: account,
+            config: config)
+        {
+            return special
+        }
         let cookieSettings = self.cookieSettings(provider: provider, account: account, config: config)
 
         switch provider {
         case .cursor:
             return self.makeSnapshot(cursor: self.makeProviderCookieSettings(cookieSettings))
-        case .opencode:
-            return self.makeSnapshot(
-                opencode: ProviderSettingsSnapshot.OpenCodeProviderSettings(
-                    cookieSource: cookieSettings.cookieSource,
-                    manualCookieHeader: cookieSettings.manualCookieHeader,
-                    workspaceID: config?.workspaceID))
-        case .opencodego:
-            return self.makeSnapshot(
-                opencodego: ProviderSettingsSnapshot.OpenCodeProviderSettings(
-                    cookieSource: cookieSettings.cookieSource,
-                    manualCookieHeader: cookieSettings.manualCookieHeader,
-                    workspaceID: config?.workspaceID))
         case .commandcode:
             return self.makeSnapshot(commandcode: self.makeProviderCookieSettings(cookieSettings))
-        case .alibaba:
-            return self.makeSnapshot(
-                alibaba: ProviderSettingsSnapshot.AlibabaCodingPlanProviderSettings(
-                    cookieSource: cookieSettings.cookieSource,
-                    manualCookieHeader: cookieSettings.manualCookieHeader,
-                    apiRegion: self.resolveAlibabaCodingPlanRegion(config)))
         case .alibabatokenplan:
             return self.makeSnapshot(alibabaTokenPlan: self.makeProviderCookieSettings(cookieSettings))
         case .factory:
             return self.makeSnapshot(factory: self.makeProviderCookieSettings(cookieSettings))
-        case .minimax:
-            return self.makeSnapshot(
-                minimax: ProviderSettingsSnapshot.MiniMaxProviderSettings(
-                    cookieSource: cookieSettings.cookieSource,
-                    manualCookieHeader: cookieSettings.manualCookieHeader,
-                    apiRegion: self.resolveMiniMaxRegion(config)))
         case .manus:
             return self.makeSnapshot(manus: self.makeProviderCookieSettings(cookieSettings))
         case .augment:
@@ -194,12 +177,54 @@ struct TokenAccountCLIContext {
             return self.makeSnapshot(perplexity: self.makeProviderCookieSettings(cookieSettings))
         case .mimo:
             return self.makeSnapshot(mimo: self.makeProviderCookieSettings(cookieSettings))
-        case .doubao:
-            return nil
         case .abacus:
             return self.makeSnapshot(abacus: self.makeProviderCookieSettings(cookieSettings))
         case .mistral:
             return self.makeSnapshot(mistral: self.makeProviderCookieSettings(cookieSettings))
+        default:
+            return nil
+        }
+    }
+
+    /// Providers whose snapshot needs fields beyond the plain cookie settings pair.
+    /// Returns nil for providers handled by the plain switch (and for `.doubao`, which has none).
+    private func makeCustomCookieBackedSnapshot(
+        provider: UsageProvider,
+        account: ProviderTokenAccount?,
+        config: ProviderConfig?) -> ProviderSettingsSnapshot?
+    {
+        let cookieSettings = self.cookieSettings(provider: provider, account: account, config: config)
+        switch provider {
+        case .opencode:
+            return self.makeSnapshot(
+                opencode: ProviderSettingsSnapshot.OpenCodeProviderSettings(
+                    cookieSource: cookieSettings.cookieSource,
+                    manualCookieHeader: cookieSettings.manualCookieHeader,
+                    workspaceID: config?.workspaceID))
+        case .opencodego:
+            return self.makeSnapshot(
+                opencodego: ProviderSettingsSnapshot.OpenCodeProviderSettings(
+                    cookieSource: cookieSettings.cookieSource,
+                    manualCookieHeader: cookieSettings.manualCookieHeader,
+                    workspaceID: config?.workspaceID))
+        case .alibaba:
+            return self.makeSnapshot(
+                alibaba: ProviderSettingsSnapshot.AlibabaCodingPlanProviderSettings(
+                    cookieSource: cookieSettings.cookieSource,
+                    manualCookieHeader: cookieSettings.manualCookieHeader,
+                    apiRegion: self.resolveAlibabaCodingPlanRegion(config)))
+        case .minimax:
+            return self.makeSnapshot(
+                minimax: ProviderSettingsSnapshot.MiniMaxProviderSettings(
+                    cookieSource: cookieSettings.cookieSource,
+                    manualCookieHeader: cookieSettings.manualCookieHeader,
+                    apiRegion: self.resolveMiniMaxRegion(config)))
+        case .devin:
+            return self.makeSnapshot(
+                devin: ProviderSettingsSnapshot.DevinProviderSettings(
+                    cookieSource: cookieSettings.cookieSource,
+                    manualBearerToken: cookieSettings.manualCookieHeader,
+                    organization: account?.sanitizedOrganizationID ?? config?.sanitizedWorkspaceID))
         case .stepfun:
             let stepfunSettings = self.cookieSettings(
                 provider: provider,
@@ -241,6 +266,7 @@ struct TokenAccountCLIContext {
         mimo: ProviderSettingsSnapshot.MiMoProviderSettings? = nil,
         abacus: ProviderSettingsSnapshot.AbacusProviderSettings? = nil,
         mistral: ProviderSettingsSnapshot.MistralProviderSettings? = nil,
+        devin: ProviderSettingsSnapshot.DevinProviderSettings? = nil,
         stepfun: ProviderSettingsSnapshot.StepFunProviderSettings? = nil) -> ProviderSettingsSnapshot
     {
         ProviderSettingsSnapshot.make(
@@ -260,6 +286,7 @@ struct TokenAccountCLIContext {
             augment: augment,
             moonshot: moonshot,
             amp: amp,
+            devin: devin,
             commandcode: commandcode,
             ollama: ollama,
             jetbrains: jetbrains,

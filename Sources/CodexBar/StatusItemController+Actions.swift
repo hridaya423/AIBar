@@ -471,10 +471,15 @@ extension StatusItemController: StatusItemMenuPersistentActionDelegate {
         DispatchQueue.main.async {
             self.preferencesSelection.tab = tab
             NSApp.activate(ignoringOtherApps: true)
-            NotificationCenter.default.post(
-                name: .codexbarOpenSettings,
-                object: nil,
-                userInfo: ["tab": tab.rawValue])
+            let outcome = SettingsWindowOpener.live().open(preferred: .notification)
+            switch outcome {
+            case .preferred:
+                break
+            case .fallback:
+                self.menuLogger.warning("Settings notification relay unavailable; used AppKit fallback")
+            case .failed:
+                self.menuLogger.error("Failed to open Settings; notification relay and AppKit fallback unavailable")
+            }
         }
     }
 

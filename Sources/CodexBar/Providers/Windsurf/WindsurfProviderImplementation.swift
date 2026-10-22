@@ -46,12 +46,12 @@ struct WindsurfProviderImplementation: ProviderImplementation {
             })
         let cookieOptions = ProviderCookieSourceUI.options(
             allowsOff: true,
-            keychainDisabled: context.settings.debugDisableKeychainAccess)
+            keychainDisabled: context.settings.keychainDisabled(for: context.provider))
 
         let cookieSubtitle: () -> String? = {
             ProviderCookieSourceUI.subtitle(
                 source: context.settings.windsurfCookieSource,
-                keychainDisabled: context.settings.debugDisableKeychainAccess,
+                keychainDisabled: context.settings.keychainDisabled(for: context.provider),
                 auto: "Automatic imports Windsurf session data from Chromium browser localStorage.",
                 manual: "Paste the Windsurf session JSON bundle from localStorage.",
                 off: "Windsurf web API access is disabled.")

@@ -166,6 +166,13 @@ extension SettingsStore {
             if provider == .copilot {
                 entry.apiKey = nil
             }
+            if let externalIdentifier = removedAccount.externalIdentifier, !externalIdentifier.isEmpty {
+                var hidden = entry.hiddenTokenAccountExternalIdentifiers ?? []
+                if !hidden.contains(externalIdentifier) {
+                    hidden.append(externalIdentifier)
+                }
+                entry.hiddenTokenAccountExternalIdentifiers = hidden
+            }
         }
         self.applyTokenAccountRemovalSideEffectsIfNeeded(
             provider: provider,
