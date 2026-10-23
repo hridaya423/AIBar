@@ -2713,3 +2713,7 @@
 "Trae CN request failed. Try refreshing later." = "Trae CN isteği başarısız oldu. Daha sonra yeniden yenileyin.";
 "Use --provider copilot." = "--provider copilot kullanın.";
 "Config changed during login. Please try again." = "Giriş sırasında yapılandırma değişti. Lütfen tekrar deneyin.";
+"Use reset" = "Sıfırlamayı kullan";
+"Use a limit reset credit?" = "Bir limit sıfırlama kredisi kullanılsın mı?";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "Bu işlem bir kredi harcar ve Codex limitlerinizi hemen sıfırlar. Geri alınamaz.";
+"Could not use reset credit" = "Sıfırlama kredisi kullanılamadı";

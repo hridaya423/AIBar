@@ -2714,3 +2714,7 @@
 "Trae CN request failed. Try refreshing later." = "درخواست Trae CN ناموفق بود. بعداً دوباره تازه‌سازی کنید.";
 "Use --provider copilot." = "از --provider copilot استفاده کنید.";
 "Config changed during login. Please try again." = "پیکربندی هنگام ورود تغییر کرد. لطفاً دوباره تلاش کنید.";
+"Use reset" = "استفاده از بازنشانی";
+"Use a limit reset credit?" = "از یک اعتبار بازنشانی سقف استفاده شود؟";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "این کار یک اعتبار مصرف می‌کند و سقف‌های Codex شما را همین حالا بازنشانی می‌کند. این کار قابل بازگشت نیست.";
+"Could not use reset credit" = "استفاده از اعتبار بازنشانی ممکن نشد";

@@ -2709,3 +2709,7 @@
 "Trae CN request failed. Try refreshing later." = "Fallou a solicitude a Trae CN. Tenta actualizar máis tarde.";
 "Use --provider copilot." = "Usa --provider copilot.";
 "Config changed during login. Please try again." = "A configuración cambiou durante o inicio de sesión. Téntao de novo.";
+"Use reset" = "Usar restablecemento";
+"Use a limit reset credit?" = "Usar un crédito de restablecemento do límite?";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "Isto gasta un crédito e restablece agora os teus límites de Codex. Non se pode desfacer.";
+"Could not use reset credit" = "Non se puido usar o crédito de restablecemento";

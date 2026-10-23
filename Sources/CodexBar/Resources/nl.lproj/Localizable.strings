@@ -2707,3 +2707,7 @@
 "Trae CN request failed. Try refreshing later." = "Het Trae CN-verzoek is mislukt. Probeer later opnieuw te vernieuwen.";
 "Use --provider copilot." = "Gebruik --provider copilot.";
 "Config changed during login. Please try again." = "De configuratie is gewijzigd tijdens het inloggen. Probeer het opnieuw.";
+"Use reset" = "Reset gebruiken";
+"Use a limit reset credit?" = "Een limietreset-tegoed gebruiken?";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "Hiermee verbruik je één tegoed en worden je Codex-limieten nu gereset. Dit kan niet ongedaan worden gemaakt.";
+"Could not use reset credit" = "Resettegoed kon niet worden gebruikt";

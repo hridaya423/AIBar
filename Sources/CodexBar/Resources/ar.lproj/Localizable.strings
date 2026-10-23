@@ -2714,3 +2714,7 @@
 "Trae CN request failed. Try refreshing later." = "فشل طلب Trae CN. حاول التحديث لاحقًا.";
 "Use --provider copilot." = "استخدم --provider copilot.";
 "Config changed during login. Please try again." = "تغيّر الإعداد أثناء تسجيل الدخول. يُرجى المحاولة مرة أخرى.";
+"Use reset" = "استخدام إعادة التعيين";
+"Use a limit reset credit?" = "هل تريد استخدام رصيد إعادة تعيين الحد؟";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "سيستهلك هذا رصيدًا واحدًا ويعيد تعيين حدود Codex الآن. لا يمكن التراجع عن ذلك.";
+"Could not use reset credit" = "تعذّر استخدام رصيد إعادة التعيين";

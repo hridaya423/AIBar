@@ -2712,3 +2712,7 @@
 "Trae CN request failed. Try refreshing later." = "Permintaan Trae CN gagal. Coba segarkan lagi nanti.";
 "Use --provider copilot." = "Gunakan --provider copilot.";
 "Config changed during login. Please try again." = "Konfigurasi berubah saat masuk. Silakan coba lagi.";
+"Use reset" = "Gunakan reset";
+"Use a limit reset credit?" = "Gunakan kredit reset batas?";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "Ini memakai satu kredit dan langsung mereset batas Codex Anda. Tindakan ini tidak dapat dibatalkan.";
+"Could not use reset credit" = "Tidak dapat menggunakan kredit reset";

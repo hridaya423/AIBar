@@ -2710,3 +2710,7 @@
 "Trae CN request failed. Try refreshing later." = "Trae CN へのリクエストに失敗しました。後でもう一度更新してください。";
 "Use --provider copilot." = "--provider copilot を使用してください。";
 "Config changed during login. Please try again." = "ログイン中に設定が変更されました。もう一度お試しください。";
+"Use reset" = "リセットを使う";
+"Use a limit reset credit?" = "上限リセットクレジットを使用しますか？";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "クレジットを1つ消費し、Codexの上限を今すぐリセットします。この操作は取り消せません。";
+"Could not use reset credit" = "リセットクレジットを使用できませんでした";

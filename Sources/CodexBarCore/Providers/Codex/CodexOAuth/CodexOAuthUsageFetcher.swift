@@ -376,6 +376,16 @@ struct CodexWorkspaceRemainingBalanceResponse: Decodable, Sendable {
     }
 }
 
+public struct CodexRateLimitResetCreditConsumption: Decodable, Equatable, Sendable {
+    public let code: String
+    public let windowsReset: Int
+
+    private enum CodingKeys: String, CodingKey {
+        case code
+        case windowsReset = "windows_reset"
+    }
+}
+
 public enum CodexOAuthUsageFetcher {
     private static let defaultChatGPTBaseURL = "https://chatgpt.com/backend-api/"
     private static let chatGPTUsagePath = "/wham/usage"
@@ -561,6 +571,78 @@ public enum CodexOAuthUsageFetcher {
         }
     }
 
+    public static func consumeRateLimitResetCredit(
+        id creditID: String,
+        accessToken: String,
+        accountId: String?,
+        env: [String: String] = ProcessInfo.processInfo.environment) async throws
+        -> CodexRateLimitResetCreditConsumption
+    {
+        try await self.consumeRateLimitResetCredit(
+            id: creditID,
+            accessToken: accessToken,
+            accountId: accountId,
+            env: env,
+            session: CodexAuthenticatedHTTPTransport.current)
+    }
+
+    public static func consumeRateLimitResetCredit(
+        id creditID: String,
+        accessToken: String,
+        accountId: String?,
+        env: [String: String],
+        session transport: any ProviderHTTPTransport) async throws -> CodexRateLimitResetCreditConsumption
+    {
+        let listURL = Self.resolveRateLimitResetCreditsURL(env: env)
+        var list = Self.resetCreditRequest(url: listURL, accessToken: accessToken, accountId: accountId)
+        list.httpMethod = "GET"
+        let listData = try await CodexAuthenticatedHTTPTransport.perform(request: list, transport: transport)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom(Self.decodeISO8601Date)
+        guard let payload = try? decoder.decode(RateLimitResetCreditsResponse.self, from: listData) else {
+            throw CodexOAuthFetchError.invalidResponse
+        }
+        // Snapshots only carry hashed credit ids, so the raw provider id is recovered from the live inventory.
+        guard let raw = payload.credits.first(where: {
+            $0.status == .available && CodexRateLimitResetCredit.stableID(forProviderID: $0.id) == creditID
+        }) else {
+            throw CodexOAuthFetchError.serverError(404, "This reset credit is not on the displayed Codex account.")
+        }
+
+        var request = Self.resetCreditRequest(
+            url: listURL.appendingPathComponent("consume"),
+            accessToken: accessToken,
+            accountId: accountId)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(RateLimitResetCreditConsumeRequest(
+            creditID: raw.id,
+            redeemRequestID: UUID().uuidString))
+        let data = try await CodexAuthenticatedHTTPTransport.perform(request: request, transport: transport)
+        do {
+            return try JSONDecoder().decode(CodexRateLimitResetCreditConsumption.self, from: data)
+        } catch {
+            throw CodexOAuthFetchError.invalidResponse
+        }
+    }
+
+    private static func resetCreditRequest(
+        url: URL,
+        accessToken: String,
+        accountId: String?) -> URLRequest
+    {
+        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("CodexBar", forHTTPHeaderField: "User-Agent")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("codex-1", forHTTPHeaderField: "OpenAI-Beta")
+        request.setValue("Codex Desktop", forHTTPHeaderField: "originator")
+        if let accountId, !accountId.isEmpty {
+            request.setValue(accountId, forHTTPHeaderField: "ChatGPT-Account-ID")
+        }
+        return request
+    }
+
     static func chatGPTUsageURL(env: [String: String]) -> URL {
         self.resolveUsageURL(env: env)
     }
@@ -690,6 +772,16 @@ public enum CodexOAuthUsageFetcher {
         private enum CodingKeys: String, CodingKey {
             case credits
             case availableCount = "available_count"
+        }
+    }
+
+    private struct RateLimitResetCreditConsumeRequest: Encodable {
+        let creditID: String
+        let redeemRequestID: String
+
+        private enum CodingKeys: String, CodingKey {
+            case creditID = "credit_id"
+            case redeemRequestID = "redeem_request_id"
         }
     }
 

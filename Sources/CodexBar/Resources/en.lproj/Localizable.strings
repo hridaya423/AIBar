@@ -2715,3 +2715,7 @@
 "Trae CN request failed. Try refreshing later." = "Trae CN request failed. Try refreshing later.";
 "Use --provider copilot." = "Use --provider copilot.";
 "Config changed during login. Please try again." = "Config changed during login. Please try again.";
+"Use reset" = "Use reset";
+"Use a limit reset credit?" = "Use a limit reset credit?";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "This spends one credit and resets your Codex limits now. It cannot be undone.";
+"Could not use reset credit" = "Could not use reset credit";

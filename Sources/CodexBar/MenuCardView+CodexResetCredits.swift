@@ -9,6 +9,7 @@ struct LimitResetCreditPresentationItem: Equatable {
 struct LimitResetCreditsPresentation: Equatable {
     let text: String
     let items: [LimitResetCreditPresentationItem]
+    var consumableCreditID: String?
 
     var expirySummaryText: String {
         let visibleItems = self.items.prefix(4).map(\.compactExpiryText)
@@ -36,10 +37,12 @@ struct LimitResetCreditsPresentation: Equatable {
     {
         let inventory = snapshot.availableInventory(at: now)
         guard !inventory.credits.isEmpty else { return nil }
-        return Self.make(
+        var presentation = Self.make(
             expirations: inventory.credits.map(\.expiresAt),
             resetStyle: resetStyle,
             now: now)
+        presentation?.consumableCreditID = inventory.credits.first?.id
+        return presentation
     }
 
     static func make(
@@ -104,13 +107,26 @@ struct LimitResetCreditsPresentation: Equatable {
 struct LimitResetCreditsContent: View {
     let presentation: LimitResetCreditsPresentation
     @Environment(\.menuItemHighlighted) private var isHighlighted
+    @Environment(\.providerCardAction) private var cardAction
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(L("Limit Reset Credits"))
-                .font(.body)
-                .fontWeight(.medium)
-                .lineLimit(1)
+            HStack {
+                Text(L("Limit Reset Credits"))
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                if let creditID = self.presentation.consumableCreditID,
+                   let consume = self.cardAction.consumeResetCredit
+                {
+                    Spacer(minLength: 8)
+                    Button(L("Use reset")) { consume(creditID) }
+                        .buttonStyle(.plain)
+                        .font(.caption)
+                        .foregroundStyle(MenuHighlightStyle.secondary(self.isHighlighted))
+                        .menuCardInteractiveControl()
+                }
+            }
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(self.presentation.text)
                     .font(.footnote.weight(.semibold))

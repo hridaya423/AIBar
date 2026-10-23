@@ -2711,3 +2711,7 @@
 "Trae CN request failed. Try refreshing later." = "Запит до Trae CN не вдався. Спробуйте оновити пізніше.";
 "Use --provider copilot." = "Використовуйте --provider copilot.";
 "Config changed during login. Please try again." = "Конфігурація змінилася під час входу. Спробуйте ще раз.";
+"Use reset" = "Використати скидання";
+"Use a limit reset credit?" = "Використати кредит скидання ліміту?";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "Це витратить один кредит і негайно скине ліміти Codex. Скасувати дію неможливо.";
+"Could not use reset credit" = "Не вдалося використати кредит скидання";

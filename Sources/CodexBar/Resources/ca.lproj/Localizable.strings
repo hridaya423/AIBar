@@ -2712,3 +2712,7 @@
 "Trae CN request failed. Try refreshing later." = "La sol·licitud a Trae CN ha fallat. Torneu a actualitzar més tard.";
 "Use --provider copilot." = "Utilitza --provider copilot.";
 "Config changed during login. Please try again." = "La configuració ha canviat durant l’inici de sessió. Torna-ho a provar.";
+"Use reset" = "Fes servir el reinici";
+"Use a limit reset credit?" = "Vols fer servir un crèdit de reinici del límit?";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "Això gasta un crèdit i reinicia ara els límits de Codex. No es pot desfer.";
+"Could not use reset credit" = "No s'ha pogut fer servir el crèdit de reinici";

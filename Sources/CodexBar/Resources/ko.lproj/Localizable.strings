@@ -2678,3 +2678,7 @@
 "Trae CN request failed. Try refreshing later." = "Trae CN 요청에 실패했습니다. 나중에 다시 새로 고침하세요.";
 "Use --provider copilot." = "--provider copilot을 사용하세요.";
 "Config changed during login. Please try again." = "로그인 중에 구성이 변경되었습니다. 다시 시도하세요.";
+"Use reset" = "리셋 사용";
+"Use a limit reset credit?" = "한도 리셋 크레딧을 사용하시겠습니까?";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "크레딧 1개를 사용하고 Codex 한도를 지금 바로 리셋합니다. 되돌릴 수 없습니다.";
+"Could not use reset credit" = "리셋 크레딧을 사용할 수 없습니다";

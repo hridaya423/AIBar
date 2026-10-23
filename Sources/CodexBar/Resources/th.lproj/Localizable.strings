@@ -2712,3 +2712,7 @@
 "Trae CN request failed. Try refreshing later." = "คำขอ Trae CN ล้มเหลว ลองรีเฟรชอีกครั้งในภายหลัง";
 "Use --provider copilot." = "ใช้ --provider copilot";
 "Config changed during login. Please try again." = "การกำหนดค่ามีการเปลี่ยนแปลงระหว่างเข้าสู่ระบบ โปรดลองอีกครั้ง";
+"Use reset" = "ใช้การรีเซ็ต";
+"Use a limit reset credit?" = "ใช้เครดิตรีเซ็ตขีดจำกัดหรือไม่";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "การดำเนินการนี้จะใช้เครดิต 1 รายการและรีเซ็ตขีดจำกัด Codex ของคุณทันที ไม่สามารถยกเลิกได้";
+"Could not use reset credit" = "ไม่สามารถใช้เครดิตรีเซ็ตได้";

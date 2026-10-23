@@ -2688,3 +2688,7 @@
 "Trae CN request failed. Try refreshing later." = "Trae CN 請求失敗。請稍後嘗試重新整理。";
 "Use --provider copilot." = "請使用 --provider copilot。";
 "Config changed during login. Please try again." = "登入期間設定已變更。請重試。";
+"Use reset" = "使用重設";
+"Use a limit reset credit?" = "使用一次額度重設券？";
+"This spends one credit and resets your Codex limits now. It cannot be undone." = "這會消耗一張重設券並立即重設你的 Codex 額度。此操作無法復原。";
+"Could not use reset credit" = "無法使用重設券";

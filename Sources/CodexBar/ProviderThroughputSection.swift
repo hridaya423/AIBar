@@ -46,6 +46,7 @@ struct ProviderThroughputSection {
 
 struct ProviderCardAction {
     var perform: (@MainActor @Sendable (MenuDescriptor.MenuAction) -> Void)?
+    var consumeResetCredit: (@MainActor @Sendable (String) -> Void)?
 }
 
 extension EnvironmentValues {

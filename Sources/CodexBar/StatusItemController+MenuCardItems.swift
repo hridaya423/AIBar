@@ -67,6 +67,9 @@ extension StatusItemController {
             let sender = NSMenuItem()
             sender.representedObject = object
             NSApp.sendAction(selector, to: self, from: sender)
+        }, consumeResetCredit: { [weak self, actionTarget] creditID in
+            actionTarget.item?.menu?.cancelTracking()
+            self?.confirmAndConsumeCodexResetCredit(id: creditID)
         })
         let payload = MenuCardRowPayload(
             content: AnyView(view
