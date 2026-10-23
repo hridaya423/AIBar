@@ -2715,3 +2715,5 @@
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "Isso gasta um crédito e redefine agora seus limites do Codex. Não é possível desfazer.";
 "Could not use reset credit" = "Não foi possível usar o crédito de redefinição";
 "Subscription value this month" = "Valor da assinatura neste mês";
+"Runs out tomorrow" = "Esgota amanhã";
+"Projected empty tomorrow" = "Esgotamento previsto amanhã";

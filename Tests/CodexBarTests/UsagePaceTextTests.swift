@@ -17,6 +17,8 @@ struct UsagePaceTextTests {
         "Runs out in %@",
         "1.5× headroom",
         "(%d%% risk)",
+        "Runs out tomorrow",
+        "Projected empty tomorrow",
         "%@ left",
         "session quota",
         "session quotas",
@@ -205,7 +207,29 @@ struct UsagePaceTextTests {
 
         let detail = UsagePaceText.weeklyDetail(provider: .codex, pace: pace, now: now)
 
-        #expect(detail.rightLabel == "Lasts until reset · 1.5× headroom (0% risk)")
+        #expect(detail.rightLabel == "Lasts until reset · 1.5× headroom")
+    }
+
+    @Test
+    func `run out on the next calendar day reads as tomorrow`() throws {
+        let now = try #require(Calendar.current.date(from: DateComponents(year: 2026, month: 3, day: 4, hour: 9)))
+        func pace(eta: TimeInterval) -> UsagePace {
+            UsagePace(
+                stage: .ahead,
+                deltaPercent: 20,
+                expectedUsedPercent: 30,
+                actualUsedPercent: 50,
+                etaSeconds: eta,
+                willLastToReset: false)
+        }
+
+        let tomorrow = UsagePaceText.weeklyDetail(provider: .codex, pace: pace(eta: 20 * 3600), now: now)
+        let sameDay = UsagePaceText.weeklyDetail(provider: .codex, pace: pace(eta: 7 * 3600), now: now)
+        let later = UsagePaceText.weeklyDetail(provider: .codex, pace: pace(eta: 40 * 3600), now: now)
+
+        #expect(tomorrow.rightLabel == "Runs out tomorrow")
+        #expect(sameDay.rightLabel == "Runs out in 7h")
+        #expect(later.rightLabel == "Runs out in 1d 16h")
     }
 
     @Test

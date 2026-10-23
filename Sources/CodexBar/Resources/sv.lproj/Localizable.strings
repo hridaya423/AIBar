@@ -2714,3 +2714,5 @@
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "Detta använder en kredit och återställer dina Codex-gränser direkt. Det går inte att ångra.";
 "Could not use reset credit" = "Det gick inte att använda återställningskrediten";
 "Subscription value this month" = "Prenumerationsvärde denna månad";
+"Runs out tomorrow" = "Tar slut imorgon";
+"Projected empty tomorrow" = "Beräknas ta slut imorgon";

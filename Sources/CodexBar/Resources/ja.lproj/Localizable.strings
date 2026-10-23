@@ -2715,3 +2715,5 @@
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "クレジットを1つ消費し、Codexの上限を今すぐリセットします。この操作は取り消せません。";
 "Could not use reset credit" = "リセットクレジットを使用できませんでした";
 "Subscription value this month" = "今月のサブスクリプション価値";
+"Runs out tomorrow" = "明日使い切る見込み";
+"Projected empty tomorrow" = "明日枯渇する見込み";

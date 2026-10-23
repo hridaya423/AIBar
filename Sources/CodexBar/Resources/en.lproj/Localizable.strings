@@ -2720,3 +2720,5 @@
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "This spends one credit and resets your Codex limits now. It cannot be undone.";
 "Could not use reset credit" = "Could not use reset credit";
 "Subscription value this month" = "Subscription value this month";
+"Runs out tomorrow" = "Runs out tomorrow";
+"Projected empty tomorrow" = "Projected empty tomorrow";

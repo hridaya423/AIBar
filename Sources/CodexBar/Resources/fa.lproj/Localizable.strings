@@ -2719,3 +2719,5 @@
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "این کار یک اعتبار مصرف می‌کند و سقف‌های Codex شما را همین حالا بازنشانی می‌کند. این کار قابل بازگشت نیست.";
 "Could not use reset credit" = "استفاده از اعتبار بازنشانی ممکن نشد";
 "Subscription value this month" = "ارزش اشتراک در این ماه";
+"Runs out tomorrow" = "فردا تمام می شود";
+"Projected empty tomorrow" = "خالی شدن فردا";

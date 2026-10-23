@@ -116,7 +116,7 @@ enum UsagePaceText {
         context: DetailContext,
         now: Date) -> String?
     {
-        let etaLabel: String?
+        var etaLabel: String?
         if pace.willLastToReset {
             etaLabel = self.combinedLastsLabel(for: pace, provider: provider)
         } else if let etaSeconds = pace.etaSeconds {
@@ -129,9 +129,13 @@ enum UsagePaceText {
         } else {
             etaLabel = nil
         }
+        if !pace.willLastToReset, let etaSeconds = pace.etaSeconds, self.runsOutTomorrow(etaSeconds, now: now) {
+            etaLabel = context == .session ? L("Projected empty tomorrow") : L("Runs out tomorrow")
+        }
 
         guard let runOutProbability = pace.runOutProbability else { return etaLabel }
         let roundedRisk = self.roundedRiskPercent(runOutProbability)
+        guard roundedRisk > 0 else { return etaLabel }
         let riskLabel = L("(%d%% risk)", roundedRisk)
         if let etaLabel {
             return L("%@ %@", etaLabel, riskLabel)
@@ -158,6 +162,13 @@ enum UsagePaceText {
 
     private static func durationText(seconds: TimeInterval, now: Date) -> String {
         UsageFormatter.resetCountdownDuration(from: now.addingTimeInterval(seconds), now: now)
+    }
+
+    private static func runsOutTomorrow(_ etaSeconds: TimeInterval, now: Date) -> Bool {
+        guard etaSeconds >= 6 * 3600,
+              let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now)
+        else { return false }
+        return Calendar.current.isDate(now.addingTimeInterval(etaSeconds), inSameDayAs: tomorrow)
     }
 
     private static func roundedRiskPercent(_ probability: Double) -> Int {

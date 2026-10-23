@@ -2707,3 +2707,5 @@
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "这将消耗一张重置券并立即重置你的 Codex 额度。此操作无法撤销。";
 "Could not use reset credit" = "无法使用重置券";
 "Subscription value this month" = "本月订阅价值";
+"Runs out tomorrow" = "预计明天耗尽";
+"Projected empty tomorrow" = "预计明天耗尽";

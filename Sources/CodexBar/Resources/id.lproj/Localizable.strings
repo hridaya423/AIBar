@@ -2717,3 +2717,5 @@
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "Ini memakai satu kredit dan langsung mereset batas Codex Anda. Tindakan ini tidak dapat dibatalkan.";
 "Could not use reset credit" = "Tidak dapat menggunakan kredit reset";
 "Subscription value this month" = "Nilai langganan bulan ini";
+"Runs out tomorrow" = "Habis besok";
+"Projected empty tomorrow" = "Diproyeksikan habis besok";

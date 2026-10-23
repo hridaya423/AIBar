@@ -2714,3 +2714,5 @@
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "Cela dépense un crédit et réinitialise vos limites Codex maintenant. Cette action est irréversible.";
 "Could not use reset credit" = "Impossible d'utiliser le crédit de réinitialisation";
 "Subscription value this month" = "Valeur de l'abonnement ce mois-ci";
+"Runs out tomorrow" = "S'épuise demain";
+"Projected empty tomorrow" = "Projeté vide demain";

@@ -2716,3 +2716,5 @@
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "Це витратить один кредит і негайно скине ліміти Codex. Скасувати дію неможливо.";
 "Could not use reset credit" = "Не вдалося використати кредит скидання";
 "Subscription value this month" = "Цінність підписки цього місяця";
+"Runs out tomorrow" = "Закінчується завтра";
+"Projected empty tomorrow" = "За прогнозом, вичерпається завтра";
