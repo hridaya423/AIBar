@@ -161,7 +161,11 @@ final class UsageStore {
     @ObservationIgnored var widgetVerifiedTokenSnapshots: WidgetVerifiedTokenSnapshots = [:]
     @ObservationIgnored let widgetAccountSnapshotStore: (any WidgetAccountSnapshotStoring)?
     var tokenAccountLiveStateProviders: Set<ProviderInstanceID> = []
-    var codexAccountSnapshots: [CodexAccountUsageSnapshot] = []
+    var codexAccountSnapshots: [CodexAccountUsageSnapshot] = [] {
+        didSet { self.updateCodexAccountActivity() }
+    }
+
+    var codexAccountActivity = CodexAccountActivity()
     var codexSettingsRefreshingAccountIDs: Set<String> = []
     var kiloScopeSnapshots: [KiloScopeSnapshot] = []
     var claudeSwapAccountSnapshots: [ProviderAccountUsageSnapshot] = []
@@ -668,7 +672,9 @@ final class UsageStore {
     /// active account has no usable usage windows.
     func menuBarSnapshot(for instanceID: ProviderInstanceID) -> UsageSnapshot? {
         // Provider-specific by design: claude-swap adapter owns Claude menu-bar presentation; see #2731.
-        self.claudeSwapMenuBarSnapshotOverride(for: instanceID) ?? self.snapshot(for: instanceID)
+        self.claudeSwapMenuBarSnapshotOverride(for: instanceID)
+            ?? self.codexActiveAccountMenuBarSnapshotOverride(for: instanceID)
+            ?? self.snapshot(for: instanceID)
     }
 
     func sourceLabel(for provider: UsageProvider) -> String {
