@@ -149,8 +149,14 @@ public enum BrowserCookieAccessGate {
         // Allow Once can leave a reusable cached key even when the ACL still requires interaction.
         if self.explicitRetryScope != nil { return true }
 
-        let requiresInteraction = self.chromiumKeychainPreflight(for: browser).requiresInteraction
-        if requiresInteraction {
+        let preflight = self.chromiumKeychainPreflight(for: browser)
+        if case .failure = preflight {
+            self.log.info(
+                "Cookie access keychain preflight failed; skipping browser",
+                metadata: ["browser": browser.displayName])
+            return false
+        }
+        if preflight.requiresInteraction {
             self.log.info(
                 "Cookie access requires keychain interaction; skipping browser",
                 metadata: ["browser": browser.displayName])
@@ -358,9 +364,9 @@ public enum BrowserCookieAccessGate {
         for label in labels {
             let outcome = KeychainAccessPreflight.checkGenericPassword(service: label.service, account: label.account)
             switch outcome {
-            case .allowed, .interactionRequired, .temporarilyUnavailable:
+            case .allowed, .interactionRequired, .temporarilyUnavailable, .failure:
                 return outcome
-            case .notFound, .failure:
+            case .notFound:
                 continue
             }
         }

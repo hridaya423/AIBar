@@ -4,6 +4,7 @@ import Testing
 @testable import CodexBarCore
 
 #if os(macOS)
+import Security
 import SweetCookieKit
 
 @Suite(.serialized)
@@ -571,6 +572,22 @@ struct BrowserDetectionTests {
 
         #expect(queriedLabels == [firstChromeLabel, firstDiaLabel])
         #expect(queriedLabels.allSatisfy { allowedLabels.contains($0) })
+    }
+
+    @Test
+    func `keychain preflight failure blocks chromium cookie attempt`() {
+        BrowserCookieAccessGate.resetForTesting()
+        defer { BrowserCookieAccessGate.resetForTesting() }
+
+        KeychainAccessGate.withTaskOverrideForTesting(false) {
+            KeychainAccessPreflight.withCheckGenericPasswordOverrideForTesting { _, _ in
+                .failure(Int(errSecAuthFailed))
+            } operation: {
+                ProviderInteractionContext.$current.withValue(.userInitiated) {
+                    #expect(BrowserCookieAccessGate.shouldAttempt(.chrome) == false)
+                }
+            }
+        }
     }
 
     @Test
