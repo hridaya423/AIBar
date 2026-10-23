@@ -20,7 +20,12 @@ extension UsageStore {
         let workDays = self.settings.weeklyProgressWorkDays
         // Provider-specific by design: only Codex's dashboard yields an account-scoped daily curve for learned pace;
         // other providers use the generic linear window calculation.
-        if provider == .codex, self.settings.historicalTrackingEnabled, workDays == nil {
+        if provider == .codex, !self.settings.historicalTrackingEnabled, workDays == nil,
+           let pattern = UsagePaceText.codexPatternPace(provider: provider, window: window, now: now)
+        {
+            elapsedWindow = window
+            resolved = pattern
+        } else if provider == .codex, self.settings.historicalTrackingEnabled, workDays == nil {
             elapsedWindow = window
             let codexAccountKey = self.codexOwnershipContext().canonicalKey
             if self.codexHistoricalDatasetAccountKey == codexAccountKey,

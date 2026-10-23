@@ -170,7 +170,9 @@ enum UsagePaceText {
         let paceCapability = ProviderDescriptorRegistry.descriptor(for: provider).pace
         guard paceCapability.supportsSessionPace(window: window, now: now) else { return nil }
         guard window.remainingPercent > 0 else { return nil }
-        guard let pace = UsagePace.weekly(window: window, now: now, defaultWindowMinutes: 300) else { return nil }
+        guard let pace = Self.codexPatternPace(provider: provider, window: window, now: now)
+            ?? UsagePace.weekly(window: window, now: now, defaultWindowMinutes: 300)
+        else { return nil }
         guard pace.expectedUsedPercent >= 3 else { return nil }
         return pace
     }

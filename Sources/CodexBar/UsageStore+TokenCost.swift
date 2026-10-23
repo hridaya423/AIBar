@@ -311,6 +311,22 @@ extension UsageStore {
         }
     }
 
+    private func updateCodexUsagePattern(from snapshot: CostUsageTokenSnapshot?) {
+        guard let snapshot else {
+            UsagePaceText.resetCodexPattern()
+            return
+        }
+        let calendar = self.settings.costUsageBucketCalendar
+        Task.detached(priority: .utility) {
+            let model = CodexUsagePatternModel(
+                events: snapshot.quotaSlices.compactMap { slice in
+                    slice.totalTokens.map { (timestamp: slice.timestamp, weight: Double($0)) }
+                },
+                calendar: calendar)
+            UsagePaceText.updateCodexPattern(model, builtFrom: snapshot.updatedAt)
+        }
+    }
+
     func installCachedTokenSnapshot(
         _ snapshot: CostUsageTokenSnapshot?,
         for provider: UsageProvider,
@@ -323,6 +339,8 @@ extension UsageStore {
             scopeSignature: self.tokenSnapshotScopeSignature(for: provider),
             accounting: accounting)
         self.warmQuotaProjection(for: snapshot)
+        // Provider-specific by design: the learned weekday x hour pace pattern is built from Codex's token history.
+        if provider == .codex { self.updateCodexUsagePattern(from: snapshot) }
     }
 
     func clearTokenSnapshot(for provider: UsageProvider) {
