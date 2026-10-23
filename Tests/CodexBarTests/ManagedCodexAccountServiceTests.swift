@@ -5,6 +5,7 @@ import Testing
 
 @Suite(.serialized, CodexCredentialFixtures())
 @MainActor
+// swiftlint:disable:next type_body_length
 struct ManagedCodexAccountServiceTests {
     @Test
     func `upsert preserves uuid for matching canonical email`() async throws {
@@ -32,6 +33,41 @@ struct ManagedCodexAccountServiceTests {
         #expect(second.providerAccountID == "account-live")
         #expect(snapshot.accounts.count == 1)
         #expect(second.managedHomePath.hasPrefix(root.standardizedFileURL.path + "/"))
+    }
+
+    @Test
+    func `new managed homes disable analytics and feedback without overwriting an existing config`() async throws {
+        let root = CodexCredentialFixtures.root.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let existingHome = root.appendingPathComponent("accounts/existing", isDirectory: true)
+        try FileManager.default.createDirectory(at: existingHome, withIntermediateDirectories: true)
+        let existingConfig = existingHome.appendingPathComponent("config.toml")
+        try "model = \"custom\"\n".write(to: existingConfig, atomically: true, encoding: .utf8)
+
+        func authenticate(homeFactory: any ManagedCodexHomeProducing) async throws -> ManagedCodexAccount {
+            try await ManagedCodexAccountService(
+                store: InMemoryManagedCodexAccountStore(
+                    accounts: ManagedCodexAccountSet(
+                        version: FileManagedCodexAccountStore.currentVersion,
+                        accounts: [])),
+                homeFactory: homeFactory,
+                loginRunner: StubManagedCodexLoginRunner.success,
+                identityReader: StubManagedCodexIdentityReader.accounts([
+                    .init(identity: .providerAccount(id: "account-live"), email: "user@example.com", plan: "Pro"),
+                ]),
+                workspaceResolver: StubManagedCodexWorkspaceResolver()).authenticateManagedAccount()
+        }
+
+        let fresh = try await authenticate(homeFactory: TestManagedCodexHomeFactory(root: root))
+        _ = try await authenticate(
+            homeFactory: UnsafeManagedCodexHomeFactory(root: root, homeURL: existingHome))
+
+        let config = try String(
+            contentsOf: URL(fileURLWithPath: fresh.managedHomePath).appendingPathComponent("config.toml"),
+            encoding: .utf8)
+        #expect(config.contains("[analytics]\nenabled = false"))
+        #expect(config.contains("[feedback]\nenabled = false"))
+        #expect(try String(contentsOf: existingConfig, encoding: .utf8) == "model = \"custom\"\n")
     }
 
     @Test

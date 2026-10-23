@@ -225,6 +225,8 @@ final class ManagedCodexAccountService {
     {
         let homeURL = self.homeFactory.makeHomeURL()
         try self.fileManager.createDirectory(at: homeURL, withIntermediateDirectories: true)
+        try? Data("[analytics]\nenabled = false\n\n[feedback]\nenabled = false\n".utf8)
+            .write(to: homeURL.appendingPathComponent("config.toml"), options: .withoutOverwriting)
         let account: ManagedCodexAccount
         let existingHomePathsToDelete: [String]
 
