@@ -2718,3 +2718,4 @@
 "Subscription value this month" = "Цінність підписки цього місяця";
 "Runs out tomorrow" = "Закінчується завтра";
 "Projected empty tomorrow" = "За прогнозом, вичерпається завтра";
+"Used so far %d%% · Pace %d%%" = "Використано наразі %d%% · Темп %d%%";

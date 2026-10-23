@@ -2718,3 +2718,4 @@
 "Subscription value this month" = "Ценность подписки в этом месяце";
 "Runs out tomorrow" = "Закончится завтра";
 "Projected empty tomorrow" = "По прогнозу закончится завтра";
+"Used so far %d%% · Pace %d%%" = "Использовано пока %d%% · Темп %d%%";

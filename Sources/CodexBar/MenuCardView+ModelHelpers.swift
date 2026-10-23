@@ -33,19 +33,22 @@ extension UsageMenuCardView.Model {
         /// True only for text produced by a pace calculation. Defaults to false
         /// so provider-owned text sharing the detail slot is preserved.
         let isPaceDerived: Bool
+        let summaryText: String?
 
         init(
             leftLabel: String,
             rightLabel: String?,
             pacePercent: Double?,
             paceOnTop: Bool,
-            isPaceDerived: Bool = false)
+            isPaceDerived: Bool = false,
+            summaryText: String? = nil)
         {
             self.leftLabel = leftLabel
             self.rightLabel = rightLabel
             self.pacePercent = pacePercent
             self.paceOnTop = paceOnTop
             self.isPaceDerived = isPaceDerived
+            self.summaryText = summaryText
         }
     }
 
@@ -58,6 +61,7 @@ extension UsageMenuCardView.Model {
         var pacePercent: Double?
         var paceOnTop = true
         var detailIsPaceDerived = false
+        var paceSummary: String?
     }
 
     static func applyPrimaryQuotaPresentation(
@@ -201,6 +205,7 @@ extension UsageMenuCardView.Model {
         presentation.pacePercent = paceDetail.pacePercent
         presentation.paceOnTop = paceDetail.paceOnTop
         presentation.detailIsPaceDerived = paceDetail.isPaceDerived
+        presentation.paceSummary = paceDetail.summaryText
     }
 
     private static func nonEmptyResetDescription(_ window: RateWindow) -> String? {
@@ -254,6 +259,7 @@ extension UsageMenuCardView.Model {
             blocked.detailLeftText = nil
             blocked.detailRightText = nil
             blocked.pacePercent = nil
+            blocked.paceSummaryText = nil
             blocked.sessionEquivalentDetail = nil
             return blocked
         }
@@ -270,6 +276,7 @@ extension UsageMenuCardView.Model {
                 result.detailRightText = nil
             }
             result.pacePercent = nil
+            result.paceSummaryText = nil
             result.sessionEquivalentDetail = nil
             return result
         }
@@ -472,6 +479,7 @@ extension UsageMenuCardView.Model {
             (current.resetText == nil) == (candidate.resetText == nil) &&
             (current.detailText == nil) == (candidate.detailText == nil) &&
             (candidateMetaText == nil || currentMetaText != nil) &&
+            (candidate.paceSummaryText == nil || current.paceSummaryText != nil) &&
             current.cardStyle == candidate.cardStyle
     }
 
@@ -846,7 +854,11 @@ extension UsageMenuCardView.Model {
             rightLabel: detail.rightLabel,
             pacePercent: detail.stage == .onTrack ? nil : expectedPercent,
             paceOnTop: window.usedPercent <= detail.expectedUsedPercent,
-            isPaceDerived: true)
+            isPaceDerived: true,
+            summaryText: L(
+                "Used so far %d%% · Pace %d%%",
+                Int(window.usedPercent.clamped(to: 0...100).rounded()),
+                Int(detail.expectedUsedPercent.rounded())))
     }
 
     static func standardWeeklyPace(input: Input, window: RateWindow) -> UsagePace? {

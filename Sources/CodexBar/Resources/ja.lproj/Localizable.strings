@@ -2717,3 +2717,4 @@
 "Subscription value this month" = "今月のサブスクリプション価値";
 "Runs out tomorrow" = "明日使い切る見込み";
 "Projected empty tomorrow" = "明日枯渇する見込み";
+"Used so far %d%% · Pace %d%%" = "ここまでの使用量 %d%% · ペース %d%%";

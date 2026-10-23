@@ -40,6 +40,7 @@ struct UsageProgressBar: View {
     let warningMarkerPercents: [Double]
     let workdayMarkerPercents: [Double]
     let workdayTickAppearance: WorkdayTickAppearance
+    var paceSummary: String?
     @Environment(\.menuItemHighlighted) private var isHighlighted
     @Environment(\.displayScale) private var displayScale
 
@@ -51,8 +52,10 @@ struct UsageProgressBar: View {
         paceOnTop: Bool = true,
         warningMarkerPercents: [Double] = [],
         workdayMarkerPercents: [Double] = [],
-        workdayTickAppearance: WorkdayTickAppearance = .subtle)
+        workdayTickAppearance: WorkdayTickAppearance = .subtle,
+        paceSummary: String? = nil)
     {
+        self.paceSummary = paceSummary
         self.percent = percent
         self.tint = tint
         self.accessibilityLabel = accessibilityLabel
@@ -183,6 +186,7 @@ struct UsageProgressBar: View {
         if !workdays.isEmpty {
             parts.append("\(L("weekly_progress_work_days_title")): \(workdays.joined(separator: ", "))")
         }
+        if let paceSummary { parts.append(paceSummary) }
         return parts.joined(separator: ". ")
     }
 

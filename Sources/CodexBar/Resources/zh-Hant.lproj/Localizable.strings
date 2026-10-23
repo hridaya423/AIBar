@@ -2695,3 +2695,4 @@
 "Subscription value this month" = "本月訂閱價值";
 "Runs out tomorrow" = "明天用完";
 "Projected empty tomorrow" = "預估明天用完";
+"Used so far %d%% · Pace %d%%" = "目前已用 %d%% · 進度 %d%%";

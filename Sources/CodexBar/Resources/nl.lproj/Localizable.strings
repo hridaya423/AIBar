@@ -2714,3 +2714,4 @@
 "Subscription value this month" = "Abonnementswaarde deze maand";
 "Runs out tomorrow" = "Loopt morgen af";
 "Projected empty tomorrow" = "Geprojecteerd leeg morgen";
+"Used so far %d%% · Pace %d%%" = "Tot nu toe gebruikt %d%% · Tempo %d%%";

@@ -2715,3 +2715,4 @@
 "Subscription value this month" = "Abo-Wert in diesem Monat";
 "Runs out tomorrow" = "Läuft morgen aus";
 "Projected empty tomorrow" = "Voraussichtlich morgen leer";
+"Used so far %d%% · Pace %d%%" = "Bisher genutzt %d%% · Tempo %d%%";

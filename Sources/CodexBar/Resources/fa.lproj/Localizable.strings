@@ -2721,3 +2721,4 @@
 "Subscription value this month" = "ارزش اشتراک در این ماه";
 "Runs out tomorrow" = "فردا تمام می شود";
 "Projected empty tomorrow" = "خالی شدن فردا";
+"Used so far %d%% · Pace %d%%" = "مصرف تاکنون %d%% · سرعت %d%%";

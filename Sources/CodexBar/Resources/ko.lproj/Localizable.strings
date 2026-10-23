@@ -2685,3 +2685,4 @@
 "Subscription value this month" = "이번 달 구독 가치";
 "Runs out tomorrow" = "내일 소진";
 "Projected empty tomorrow" = "내일 소진 예상";
+"Used so far %d%% · Pace %d%%" = "지금까지 사용 %d%% · 페이스 %d%%";

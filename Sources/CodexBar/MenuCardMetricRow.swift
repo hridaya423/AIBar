@@ -36,12 +36,16 @@ struct MetricRow: View {
                     paceOnTop: self.metric.paceOnTop,
                     warningMarkerPercents: self.metric.warningMarkerPercents,
                     workdayMarkerPercents: self.metric.workdayMarkerPercents,
-                    workdayTickAppearance: self.metric.workdayTickAppearance)
+                    workdayTickAppearance: self.metric.workdayTickAppearance,
+                    paceSummary: self.metric.paceSummaryText)
                 if !self.compact, let layoutMetaText = layoutPresentation.metaText {
                     self.layoutPreservingText(
                         presentation.metaText,
                         layoutText: layoutMetaText,
                         lineLimit: 2)
+                }
+                if !self.compact, let layoutSummary = self.layoutMetric.paceSummaryText {
+                    self.layoutPreservingText(self.metric.paceSummaryText, layoutText: layoutSummary, lineLimit: 1)
                 }
                 if !self.compact, let layoutDetailText = self.layoutMetric.detailText {
                     self.layoutPreservingText(

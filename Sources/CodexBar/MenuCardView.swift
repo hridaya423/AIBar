@@ -41,6 +41,7 @@ struct UsageMenuCardView: View {
             var dailyTargetText: String?
             var detailLeftText: String?
             var detailRightText: String?
+            var paceSummaryText: String?
             var pacePercent: Double?
             /// True when detailLeftText/detailRightText came from a pace forecast.
             let detailIsPaceDerived: Bool
@@ -63,6 +64,7 @@ struct UsageMenuCardView: View {
                 detailText: String?,
                 detailLeftText: String?,
                 detailRightText: String?,
+                paceSummaryText: String? = nil,
                 pacePercent: Double?,
                 detailIsPaceDerived: Bool = false,
                 paceOnTop: Bool,
@@ -91,6 +93,7 @@ struct UsageMenuCardView: View {
                 self.cardStyle = cardStyle
                 self.sessionEquivalentDetail = sessionEquivalentDetail
                 self.isSyntheticCreditLane = isSyntheticCreditLane
+                self.paceSummaryText = paceSummaryText
             }
 
             var percentLabel: String {
@@ -1363,6 +1366,7 @@ extension UsageMenuCardView.Model {
             detailText: presentation.detailText,
             detailLeftText: presentation.detailLeft,
             detailRightText: presentation.detailRight,
+            paceSummaryText: presentation.paceSummary,
             pacePercent: presentation.pacePercent,
             detailIsPaceDerived: presentation.detailIsPaceDerived,
             paceOnTop: presentation.paceOnTop,
@@ -1485,6 +1489,7 @@ extension UsageMenuCardView.Model {
             detailText: weeklyDetailText,
             detailLeftText: paceDetail?.leftLabel,
             detailRightText: paceDetail?.rightLabel,
+            paceSummaryText: paceDetail?.summaryText,
             pacePercent: paceDetail?.pacePercent,
             detailIsPaceDerived: paceDetail?.isPaceDerived ?? false,
             paceOnTop: paceDetail?.paceOnTop ?? true,

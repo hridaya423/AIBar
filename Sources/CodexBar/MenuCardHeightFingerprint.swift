@@ -126,6 +126,7 @@ extension UsageMenuCardView.Model.Metric {
             // content (not just presence) can change the measured card height.
             MenuCardHeightFingerprint.field("reset", presentation.resetText),
             MenuCardHeightFingerprint.field("meta", presentation.metaText),
+            MenuCardHeightFingerprint.field("paceSummary", self.paceSummaryText),
             self.detailText == nil ? "detail=0" : "detail=1",
             MenuCardHeightFingerprint.field("dailyTarget", self.dailyTargetText),
             self.pacePercent == nil ? "pace=0" : "pace=1",

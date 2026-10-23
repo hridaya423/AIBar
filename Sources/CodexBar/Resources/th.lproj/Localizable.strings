@@ -2719,3 +2719,4 @@
 "Subscription value this month" = "มูลค่าการสมัครสมาชิกเดือนนี้";
 "Runs out tomorrow" = "หมดพรุ่งนี้";
 "Projected empty tomorrow" = "คาดการณ์ว่างเปล่าพรุ่งนี้";
+"Used so far %d%% · Pace %d%%" = "ใช้ไปแล้ว %d%% · ความเร็ว %d%%";
