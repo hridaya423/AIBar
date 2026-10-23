@@ -29,18 +29,25 @@ public struct OpenCodeGoLocalUsageReader: Sendable {
     private static let limits = (session: 12.0, weekly: 30.0, monthly: 60.0)
 
     private static let sharedCache = CacheBox()
+    private static let sharedOpenAICache = CacheBox()
+    private let providerID: String
     private let cache: CacheBox
     private let authURL: URL
     private let databaseURL: URL
 
-    public init(homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser) {
+    public init(
+        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser,
+        providerID: String = "opencode-go")
+    {
         let openCodeDirectory = homeDirectory.appendingPathComponent(".local/share/opencode", isDirectory: true)
-        self.cache = Self.sharedCache
+        self.providerID = providerID
+        self.cache = providerID == "opencode-go" ? Self.sharedCache : Self.sharedOpenAICache
         self.authURL = openCodeDirectory.appendingPathComponent("auth.json", isDirectory: false)
         self.databaseURL = openCodeDirectory.appendingPathComponent("opencode.db", isDirectory: false)
     }
 
-    public init(authURL: URL, databaseURL: URL) {
+    public init(authURL: URL, databaseURL: URL, providerID: String = "opencode-go") {
+        self.providerID = providerID
         self.cache = CacheBox()
         self.authURL = authURL
         self.databaseURL = databaseURL
@@ -68,6 +75,11 @@ public struct OpenCodeGoLocalUsageReader: Sendable {
             throw hasAuth ? OpenCodeGoLocalUsageError.historyUnavailable("no local usage rows") : .notDetected
         }
         return Self.snapshot(rows: rows, now: now, historyDays: historyDays, calendar: calendar)
+    }
+
+    func cachedRows() throws -> [UsageRow] {
+        guard FileManager.default.fileExists(atPath: self.databaseURL.path) else { return [] }
+        return try self.cache.read(at: self.databaseURL) { try self.readRows() }
     }
 
     private func readRows() throws -> [UsageRow] {
@@ -127,6 +139,7 @@ public struct OpenCodeGoLocalUsageReader: Sendable {
             throw Self.sqliteFailure(db: db, resultCode: prepareResult)
         }
         defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, self.providerID, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
 
         var rows: [UsageRow] = []
         var step = sqlite3_step(stmt)
@@ -180,7 +193,7 @@ public struct OpenCodeGoLocalUsageReader: Sendable {
             THEN json_extract(data, '$.tokens') END AS tokens
         FROM message
         WHERE json_valid(data)
-          AND json_extract(data, '$.providerID') = 'opencode-go'
+          AND json_extract(data, '$.providerID') = ?1
           AND json_extract(data, '$.role') = 'assistant'
     """
 
@@ -224,7 +237,7 @@ public struct OpenCodeGoLocalUsageReader: Sendable {
         FROM session_message s
         WHERE s.type IN ('assistant', 'compaction')
           AND json_valid(s.data)
-          AND json_extract(s.data, '$.model.providerID') = 'opencode-go'
+          AND json_extract(s.data, '$.model.providerID') = ?1
           AND json_type(s.data, '$.cost') IN ('integer', 'real')
           AND NOT EXISTS (
             SELECT 1 FROM legacy_usage m WHERE m.messageID = s.id
@@ -279,7 +292,7 @@ public struct OpenCodeGoLocalUsageReader: Sendable {
         }
     }
 
-    private struct UsageRow {
+    struct UsageRow {
         let createdMs: Int64
         let cost: Double
         /// The underlying model behind the `opencode-go` Zen proxy; empty when unattributed.
@@ -287,7 +300,7 @@ public struct OpenCodeGoLocalUsageReader: Sendable {
         let tokens: TokenCounts?
     }
 
-    private struct TokenCounts: Decodable {
+    struct TokenCounts: Decodable {
         struct Cache: Decodable {
             let read: Int?
             let write: Int?

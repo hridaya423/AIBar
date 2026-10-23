@@ -948,6 +948,15 @@ public struct CostUsageFetcher: Sendable {
                         environment: options.environment)
                 }
             }
+            // Provider-specific by design: OpenCode sessions on the openai provider are Codex spend.
+            if provider == .codex, options.shouldMergePiUsage, options.scanOptions.codexSessionsRoot == nil {
+                daily = OpenCodeGoLocalUsageReader.openAI(environment: options.environment).mergingCodexUsage(
+                    into: daily,
+                    since: since,
+                    until: now,
+                    calendar: options.scanOptions.calendar,
+                    cacheRoot: options.scanOptions.cacheRoot)
+            }
             let native = LocalTokenScanReport(
                 daily: daily,
                 projects: projects,
