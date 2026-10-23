@@ -324,6 +324,8 @@ extension StatusItemController {
             snapshot?.primary == nil ? "0" : "1",
             snapshot?.secondary == nil ? "0" : "1",
             snapshot?.tertiary == nil ? "0" : "1",
+            // Provider-specific by design: only Codex shows the subscription value estimate in this submenu.
+            provider == .codex ? self.store.codexSubscriptionValue().map { "\($0)" } ?? "none" : "",
         ].joined(separator: "|")
     }
 

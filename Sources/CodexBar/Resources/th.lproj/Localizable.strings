@@ -2716,3 +2716,4 @@
 "Use a limit reset credit?" = "ใช้เครดิตรีเซ็ตขีดจำกัดหรือไม่";
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "การดำเนินการนี้จะใช้เครดิต 1 รายการและรีเซ็ตขีดจำกัด Codex ของคุณทันที ไม่สามารถยกเลิกได้";
 "Could not use reset credit" = "ไม่สามารถใช้เครดิตรีเซ็ตได้";
+"Subscription value this month" = "มูลค่าการสมัครสมาชิกเดือนนี้";

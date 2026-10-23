@@ -2717,3 +2717,4 @@
 "Use a limit reset credit?" = "Bir limit sıfırlama kredisi kullanılsın mı?";
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "Bu işlem bir kredi harcar ve Codex limitlerinizi hemen sıfırlar. Geri alınamaz.";
 "Could not use reset credit" = "Sıfırlama kredisi kullanılamadı";
+"Subscription value this month" = "Bu ayki abonelik değeri";

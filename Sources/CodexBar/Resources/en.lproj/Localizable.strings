@@ -2719,3 +2719,4 @@
 "Use a limit reset credit?" = "Use a limit reset credit?";
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "This spends one credit and resets your Codex limits now. It cannot be undone.";
 "Could not use reset credit" = "Could not use reset credit";
+"Subscription value this month" = "Subscription value this month";

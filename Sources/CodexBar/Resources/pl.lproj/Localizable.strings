@@ -2717,3 +2717,4 @@
 "Use a limit reset credit?" = "Użyć kredytu resetu limitu?";
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "Zużyje to jeden kredyt i natychmiast zresetuje limity Codex. Nie można tego cofnąć.";
 "Could not use reset credit" = "Nie udało się użyć kredytu resetu";
+"Subscription value this month" = "Wartość subskrypcji w tym miesiącu";

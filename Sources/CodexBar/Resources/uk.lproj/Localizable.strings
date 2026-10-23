@@ -2715,3 +2715,4 @@
 "Use a limit reset credit?" = "Використати кредит скидання ліміту?";
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "Це витратить один кредит і негайно скине ліміти Codex. Скасувати дію неможливо.";
 "Could not use reset credit" = "Не вдалося використати кредит скидання";
+"Subscription value this month" = "Цінність підписки цього місяця";

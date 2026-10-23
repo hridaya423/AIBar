@@ -2715,3 +2715,4 @@
 "Use a limit reset credit?" = "Dùng một tín dụng đặt lại giới hạn?";
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "Thao tác này dùng một tín dụng và đặt lại giới hạn Codex của bạn ngay. Không thể hoàn tác.";
 "Could not use reset credit" = "Không thể dùng tín dụng đặt lại";
+"Subscription value this month" = "Giá trị gói đăng ký tháng này";

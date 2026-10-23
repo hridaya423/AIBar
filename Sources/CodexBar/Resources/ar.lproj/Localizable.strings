@@ -2718,3 +2718,4 @@
 "Use a limit reset credit?" = "هل تريد استخدام رصيد إعادة تعيين الحد؟";
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "سيستهلك هذا رصيدًا واحدًا ويعيد تعيين حدود Codex الآن. لا يمكن التراجع عن ذلك.";
 "Could not use reset credit" = "تعذّر استخدام رصيد إعادة التعيين";
+"Subscription value this month" = "قيمة الاشتراك هذا الشهر";

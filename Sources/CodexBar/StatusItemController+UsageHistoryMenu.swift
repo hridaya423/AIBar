@@ -49,6 +49,16 @@ extension StatusItemController {
             return true
         }
 
+        // Provider-specific by design: only Codex has a weekly quota that scales to a monthly subscription value.
+        if provider == .codex, let estimate = self.store.codexSubscriptionValue() {
+            self.appendUsageHistoryChart(
+                SubscriptionValueSummaryView(estimate: estimate),
+                to: submenu,
+                provider: provider,
+                width: width)
+            submenu.addItem(.separator())
+        }
+
         // Provider-specific by design: this menu burndown currently targets Codex, Claude, and Kiro quota histories.
         if provider == .codex || provider == .claude || provider == .kiro {
             let burndownView = QuotaBurndownChartMenuView(

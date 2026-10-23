@@ -2706,3 +2706,4 @@
 "Use a limit reset credit?" = "使用一次额度重置券？";
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "这将消耗一张重置券并立即重置你的 Codex 额度。此操作无法撤销。";
 "Could not use reset credit" = "无法使用重置券";
+"Subscription value this month" = "本月订阅价值";

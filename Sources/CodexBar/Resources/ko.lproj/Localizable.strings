@@ -2682,3 +2682,4 @@
 "Use a limit reset credit?" = "한도 리셋 크레딧을 사용하시겠습니까?";
 "This spends one credit and resets your Codex limits now. It cannot be undone." = "크레딧 1개를 사용하고 Codex 한도를 지금 바로 리셋합니다. 되돌릴 수 없습니다.";
 "Could not use reset credit" = "리셋 크레딧을 사용할 수 없습니다";
+"Subscription value this month" = "이번 달 구독 가치";
