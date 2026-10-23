@@ -90,10 +90,9 @@ struct UsageProgressBar: View {
             let cornerSize = CGSize(width: cornerRadius, height: cornerRadius)
             let rect = CGRect(origin: .zero, size: size)
 
-            context.clip(to: Path(rect))
-
             // Track
             let trackPath = Path { p in p.addRoundedRect(in: rect, cornerSize: cornerSize) }
+            context.clip(to: trackPath)
             context.fill(trackPath, with: .color(MenuHighlightStyle.progressTrack(self.isHighlighted)))
 
             // Fill
