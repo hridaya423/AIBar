@@ -70,7 +70,7 @@ struct OpenAIAPIMenuCardModelTests {
         #expect(model.inlineUsageDashboard?.detailLines.contains { $0.contains("Reported by") } == false)
         #expect(model.providerCost == nil)
         #expect(model.usageNotes.contains { $0.contains("Today: $12.50") })
-        #expect(model.usageNotes.contains("Top model: gpt-5.2"))
+        #expect(model.usageNotes.contains("Top model: gpt-5.2 · 1.5K tokens (100%)"))
         #expect(model.creditsText == nil)
         #expect(model.planText == "Admin API")
     }

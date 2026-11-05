@@ -19,7 +19,7 @@ struct MistralTokenPresentationTests {
                 "Top model: fixture-beta",
             ])
             let dashboard = try #require(UsageMenuCardView.Model.inlineUsageDashboard(input: Self.input(snapshot)))
-            #expect(dashboard.detailLines.contains("Top model: fixture-beta"))
+            #expect(dashboard.detailLines.contains("Top model: fixture-beta · $9.25 (74%)"))
             #expect(dashboard.kpis.contains { $0.value == "$9.25" })
             try Self.capture("normal", snapshot: snapshot, dashboard: dashboard)
         }
@@ -97,7 +97,7 @@ struct MistralTokenPresentationTests {
             #expect(projected.daily.map(\.date) == ["2026-09-02"])
             let dashboard = try #require(UsageMenuCardView.Model.inlineUsageDashboard(
                 input: Self.input(snapshot, historyDays: 11, tokenOnly: true)))
-            #expect(dashboard.detailLines.contains("Top model: fixture-overflow"))
+            #expect(dashboard.detailLines.contains("Top model: fixture-overflow · $9.00 (97%)"))
             #expect(dashboard.kpis.contains { $0.value == "$9.25" })
         }
     }
@@ -126,6 +126,26 @@ struct MistralTokenPresentationTests {
                     ]),
             ])
             #expect(Self.summary(snapshot).last == "Top model: fixture-alpha")
+        }
+    }
+
+    @Test
+    func `top model shows token share when costs are zero`() throws {
+        try CodexBarLocalizationOverride.$appLanguage.withValue("en") {
+            let snapshot = Self.snapshot(input: 40, daily: [
+                .init(
+                    day: "2026-09-01",
+                    cost: 0,
+                    inputTokens: 40,
+                    cachedTokens: 0,
+                    outputTokens: 0,
+                    models: [
+                        .init(name: "fixture-alpha", cost: 0, inputTokens: 30, cachedTokens: 0, outputTokens: 0),
+                        .init(name: "fixture-beta", cost: 0, inputTokens: 10, cachedTokens: 0, outputTokens: 0),
+                    ]),
+            ])
+            let dashboard = try #require(UsageMenuCardView.Model.inlineUsageDashboard(input: Self.input(snapshot)))
+            #expect(dashboard.detailLines.contains("Top model: fixture-alpha · 30 tokens (75%)"))
         }
     }
 

@@ -349,7 +349,7 @@ struct ProviderInlineDashboardModelTests {
             cost: 1.5,
             tokenCount: 150,
             currencyCode: "EUR"))
-        #expect(model.inlineUsageDashboard?.detailLines.contains("Top model: mistral-large") == true)
+        #expect(model.inlineUsageDashboard?.detailLines.contains("Top model: mistral-large · €1.50 (100%)") == true)
     }
 
     @Test

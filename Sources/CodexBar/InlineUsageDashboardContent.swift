@@ -105,7 +105,10 @@ extension UsageMenuCardView.Model {
             thirtyDayNote,
         ]
         if let topModel = usage.topModels.first {
-            notes.append("\(L("Top model")): \(topModel.name)")
+            notes.append("\(L("Top model")): " + Self.topModelSummary(
+                name: topModel.name,
+                tokens: topModel.totalTokens,
+                totalTokens: thirty.totalTokens))
         }
         return notes
     }
@@ -246,7 +249,18 @@ extension UsageMenuCardView.Model {
         if unpricedCount > 0 { details.append("\(L("Partial estimate")) · \(L("Unpriced")) \(unpricedCount)") }
         if let note = UsageFormatter.incompleteUsageNote(incompleteCount) { details.append(note) }
         if let topModel = Self.topCostModel(from: snapshot.daily) {
-            details.append("\(L("Top model")): \(Self.shortModelName(topModel))")
+            details.append("\(L("Top model")): " + Self.topModelSummary(
+                name: topModel.name,
+                cost: topModel.cost,
+                totalCost: topModel.totalCost,
+                tokens: topModel.tokens,
+                totalTokens: topModel.totalTokens,
+                costString: { value in
+                    UsageFormatter.convertedCostString(
+                        value,
+                        preferredCurrency: input.preferredCurrencyCode,
+                        providerCurrency: snapshot.currencyCode)
+                }))
         }
         let tokenCost = ProviderDescriptorRegistry.descriptor(for: input.provider).tokenCost
         let hintLines = Self.tokenUsageHintLines(provider: input.provider)
@@ -659,29 +673,72 @@ extension UsageMenuCardView.Model {
         return String(trimmed.prefix(25)) + "…"
     }
 
-    private static func topCostModel(from entries: [CostUsageDailyReport.Entry]) -> String? {
+    private struct TopCostModel {
+        let name: String
+        let cost: Double
+        let totalCost: Double
+        let tokens: Int
+        let totalTokens: Int
+    }
+
+    private static func topModelSummary(
+        name: String,
+        cost: Double = 0,
+        totalCost: Double = 0,
+        tokens: Int,
+        totalTokens: Int,
+        costString: (Double) -> String = { _ in "" }) -> String
+    {
+        let short = Self.shortModelName(name)
+        let value: String
+        let share: Double
+        if cost > 0 {
+            value = costString(cost)
+            share = totalCost > 0 ? cost / totalCost : 0
+        } else if tokens > 0 {
+            value = "\(UsageFormatter.tokenCountString(tokens)) \(L("tokens"))"
+            share = totalTokens > 0 ? Double(tokens) / Double(totalTokens) : 0
+        } else {
+            return short
+        }
+        guard share > 0 else { return "\(short) · \(value)" }
+        return "\(short) · \(value) (\(Int((min(1, share) * 100).rounded()))%)"
+    }
+
+    private static func topCostModel(from entries: [CostUsageDailyReport.Entry]) -> TopCostModel? {
         guard entries.allSatisfy({
             $0.incompleteRequestCount == 0
                 && $0.coverageCounts.unpriced == 0
                 && $0.coverageCounts.unmetered == 0
         }) else { return nil }
         var scores: [String: (cost: Double, tokens: Int)] = [:]
+        var totalCost = 0.0
+        var totalTokens = 0
         for entry in entries {
             for model in entry.modelBreakdowns ?? [] {
                 var score = scores[model.modelName] ?? (0, 0)
                 score.cost += model.costUSD ?? 0
+                totalCost += model.costUSD ?? 0
                 let addition = score.tokens.addingReportingOverflow(model.totalTokens ?? 0)
-                guard !addition.overflow else { return nil }
+                let totalAddition = totalTokens.addingReportingOverflow(model.totalTokens ?? 0)
+                guard !addition.overflow, !totalAddition.overflow else { return nil }
                 score.tokens = addition.partialValue
+                totalTokens = totalAddition.partialValue
                 scores[model.modelName] = score
             }
         }
-        return scores.max {
+        guard let top = scores.max(by: {
             if $0.value.cost == $1.value.cost {
                 return $0.value.tokens < $1.value.tokens
             }
             return $0.value.cost < $1.value.cost
-        }?.key
+        }) else { return nil }
+        return TopCostModel(
+            name: top.key,
+            cost: top.value.cost,
+            totalCost: totalCost,
+            tokens: top.value.tokens,
+            totalTokens: totalTokens)
     }
 }
 
