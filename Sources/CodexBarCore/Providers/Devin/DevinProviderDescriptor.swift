@@ -24,7 +24,7 @@ public enum DevinProviderDescriptor {
                         manualBearerToken: settings.manualCookieHeader,
                         organization: context.config?.sanitizedWorkspaceID)
                 }),
-            config: ProviderConfigCapabilities(workspaceIDValidationOrder: 4),
+            config: ProviderConfigCapabilities(workspaceIDValidationOrder: 4, autoImportNeedsKeychain: false),
             metadata: ProviderMetadata(
                 id: .devin,
                 displayName: "Devin",

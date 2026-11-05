@@ -29,7 +29,7 @@ enum ProviderCookieSourceUI {
                 let text = subtitles()
                 return self.subtitle(
                     source: context.settings[keyPath: source],
-                    keychainDisabled: context.settings.debugDisableKeychainAccess,
+                    keychainDisabled: context.settings.keychainBlocksAutoImport(for: context.provider),
                     auto: text.auto,
                     manual: text.manual,
                     off: text.off)
@@ -37,7 +37,7 @@ enum ProviderCookieSourceUI {
             binding: context.rawValueBinding(source, fallback: .auto),
             options: self.options(
                 allowsOff: allowsOff,
-                keychainDisabled: context.settings.debugDisableKeychainAccess),
+                keychainDisabled: context.settings.keychainBlocksAutoImport(for: context.provider)),
             isVisible: isVisible,
             onChange: onChange,
             trailingText: trailingText,

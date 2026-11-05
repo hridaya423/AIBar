@@ -102,7 +102,7 @@ struct PluginCookieProviderImplementation: ProviderImplementation {
             dynamicSubtitle: {
                 ProviderCookieSourceUI.subtitle(
                     source: self.source(context.settings),
-                    keychainDisabled: context.settings.debugDisableKeychainAccess,
+                    keychainDisabled: context.settings.keychainBlocksAutoImport(for: self.id),
                     auto: picker.auto.localized + " " + self.cookieBrowserHint,
                     manual: picker.manual.localized,
                     off: picker.off.localized)
@@ -112,7 +112,7 @@ struct PluginCookieProviderImplementation: ProviderImplementation {
                 set: { context.settings.setCookieSource(ProviderCookieSource(rawValue: $0) ?? .auto, provider: self.id)
                 }),
             options: ProviderCookieSourceUI.options(
-                allowsOff: picker.allowsOff, keychainDisabled: context.settings.debugDisableKeychainAccess),
+                allowsOff: picker.allowsOff, keychainDisabled: context.settings.keychainBlocksAutoImport(for: self.id)),
             isVisible: nil,
             onChange: nil,
             trailingText: self.trailingText ?? (picker.showsRefreshAction ? {

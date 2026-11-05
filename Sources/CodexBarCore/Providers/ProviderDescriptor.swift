@@ -98,13 +98,16 @@ public struct ProviderHistoryCapability: Sendable, Equatable {
 public struct ProviderConfigCapabilities: Sendable, Equatable {
     public let workspaceIDValidationOrder: Int?
     public let supportsEnterpriseHost: Bool
+    public let autoImportNeedsKeychain: Bool
 
     public init(
         workspaceIDValidationOrder: Int? = nil,
-        supportsEnterpriseHost: Bool = false)
+        supportsEnterpriseHost: Bool = false,
+        autoImportNeedsKeychain: Bool = true)
     {
         self.workspaceIDValidationOrder = workspaceIDValidationOrder
         self.supportsEnterpriseHost = supportsEnterpriseHost
+        self.autoImportNeedsKeychain = autoImportNeedsKeychain
     }
 }
 

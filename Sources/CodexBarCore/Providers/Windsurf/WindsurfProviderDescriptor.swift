@@ -11,6 +11,7 @@ public enum WindsurfProviderDescriptor {
                     cookieSource: settings.cookieSource,
                     manualCookieHeader: settings.manualCookieHeader)
             }),
+            config: ProviderConfigCapabilities(autoImportNeedsKeychain: false),
             metadata: ProviderMetadata(
                 id: .windsurf,
                 displayName: "Windsurf",

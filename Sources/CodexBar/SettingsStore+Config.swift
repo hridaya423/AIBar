@@ -304,8 +304,13 @@ extension SettingsStore {
         fallback: ProviderCookieSource) -> ProviderCookieSource
     {
         let source = self.configSnapshot.providerConfig(for: provider.instanceID)?.cookieSource ?? fallback
-        guard self.debugDisableKeychainAccess == false else { return source == .off ? .off : .manual }
+        guard self.keychainBlocksAutoImport(for: provider) == false else { return source == .off ? .off : .manual }
         return source
+    }
+
+    func keychainBlocksAutoImport(for provider: UsageProvider) -> Bool {
+        self.debugDisableKeychainAccess && ProviderDescriptorRegistry.descriptor(for: provider).config
+            .autoImportNeedsKeychain
     }
 
     func logProviderModeChange(provider: UsageProvider, field: String, value: String) {
